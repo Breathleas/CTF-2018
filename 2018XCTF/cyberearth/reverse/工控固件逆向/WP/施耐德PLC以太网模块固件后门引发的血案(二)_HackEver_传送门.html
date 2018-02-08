@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<!-- saved from url=(0029)http://chuansong.me/n/1864343 -->
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="sogou_site_verification" content="hhvxQaTyZg">
+<link href="./施耐德PLC以太网模块固件后门引发的血案(二)_HackEver_传送门_files/inspector.css" rel="stylesheet" type="text/css">
+<link href="./施耐德PLC以太网模块固件后门引发的血案(二)_HackEver_传送门_files/main.css" rel="stylesheet" type="text/css">
+<link href="./施耐德PLC以太网模块固件后门引发的血案(二)_HackEver_传送门_files/base.css" rel="stylesheet" type="text/css">
+<!--[if IE]>
+<link href="/static/css/ie.css" rel="stylesheet" type="text/css">
+<![endif]-->
+<!-- Le fav and touch icons -->
+<link rel="apple-touch-icon-precomposed" sizes="144x144" href="http://chuansong.me/static/img/ico/apple-touch-icon-ipad3.png">
+<link rel="apple-touch-icon-precomposed" sizes="114x114" href="http://chuansong.me/static/img/ico/apple-touch-icon-iphone4.png">
+<link rel="apple-touch-icon-precomposed" sizes="72x72" href="http://chuansong.me/static/img/ico/apple-touch-icon-ipad.png">
+<link rel="apple-touch-icon-precomposed" href="http://chuansong.me/static/img/ico/apple-touch-icon-iphone.png">
+<link rel="shortcut icon" type="image/x-icon" href="http://chuansong.me/static/favicon.ico">
+
+<title>施耐德PLC以太网模块固件后门引发的血案(二)_HackEver_传送门</title>
+<meta name="keywords" content="施耐德PLC以太网模块固件后门引发的血案(二),HackEver,传送门">
+<meta name="description" content="上篇文章主要分享了关于施耐德PLC以太网固件后门漏洞CVE-2011-4859简单的分析和利用方式，这篇还将围绕硬编码后门这个主题，分享针对二进制固件文件（wwwroot\\conf\\exec\\NOE77101.bin）的分析思路。">
+
+<link rel="stylesheet" type="text/css" href="./施耐德PLC以太网模块固件后门引发的血案(二)_HackEver_传送门_files/article_improve.css">
+
+<!--[if lt IE 9]><link rel="stylesheet" type="text/css" href="/static/css/article_pc.css"/> <![endif]-->
+<link media="screen and (min-width:1023px)" rel="stylesheet" type="text/css" href="./施耐德PLC以太网模块固件后门引发的血案(二)_HackEver_传送门_files/article_pc.css">
+<style>ol,ul{list-style-position:inside;}</style>
+
+
+<style type="text/css" abt="234"></style><script src="./施耐德PLC以太网模块固件后门引发的血案(二)_HackEver_传送门_files/hm.js.下载"></script><script src="./施耐德PLC以太网模块固件后门引发的血案(二)_HackEver_传送门_files/share.js.下载"></script><script>//console.log('a')
+</script><script>doAdblock();
+function doAdblock(){
+    (function() {
+        function A() {}
+        A.prototype = {
+            rules: {
+                'pps_pps': {
+                    'find': /^http:\/\/www\.iqiyi\.com\/player\/cupid\/common\/pps_flvplay_s\.swf/,
+                    'replace': 'http://swf.adtchrome.com/pps_20140420.swf'
+                },
+                '17173_in':{
+                    'find':/http:\/\/f\.v\.17173cdn\.com\/(\d+\/)?flash\/PreloaderFile(Customer)?\.swf/,
+                    'replace':"http://swf.adtchrome.com/17173_in_20150522.swf"
+                },
+                '17173_out':{
+                    'find':/http:\/\/f\.v\.17173cdn\.com\/(\d+\/)?flash\/PreloaderFileFirstpage\.swf/,
+                    'replace':"http://swf.adtchrome.com/17173_out_20150522.swf"
+                },
+                '17173_live':{
+                    'find':/http:\/\/f\.v\.17173cdn\.com\/(\d+\/)?flash\/Player_stream(_firstpage)?\.swf/,
+                    'replace':"http://swf.adtchrome.com/17173_stream_20150522.swf"
+                },
+                '17173_live_out':{
+                    'find':/http:\/\/f\.v\.17173cdn\.com\/(\d+\/)?flash\/Player_stream_(custom)?Out\.swf/,
+                    'replace':"http://swf.adtchrome.com/17173.out.Live.swf"
+                }
+            },
+            _done: null,
+            get done() {
+                if(!this._done) {
+                    this._done = new Array();
+                }
+                return this._done;
+            },
+            addAnimations: function() {
+                var style = document.createElement('style');
+                style.type = 'text/css';
+                style.innerHTML = 'object,embed{\
+                -webkit-animation-duration:.001s;-webkit-animation-name:playerInserted;\
+                -ms-animation-duration:.001s;-ms-animation-name:playerInserted;\
+                -o-animation-duration:.001s;-o-animation-name:playerInserted;\
+                animation-duration:.001s;animation-name:playerInserted;}\
+                @-webkit-keyframes playerInserted{from{opacity:0.99;}to{opacity:1;}}\
+                @-ms-keyframes playerInserted{from{opacity:0.99;}to{opacity:1;}}\
+                @-o-keyframes playerInserted{from{opacity:0.99;}to{opacity:1;}}\
+                @keyframes playerInserted{from{opacity:0.99;}to{opacity:1;}}';
+                document.getElementsByTagName('head')[0].appendChild(style);
+            },
+            animationsHandler: function(e) {
+                if(e.animationName === 'playerInserted') {
+                    this.replace(e.target);
+                }
+            },
+            replace: function(elem) {
+                if (/http:\/\/v.youku.com\/v_show\/.*/.test(window.location.href)){
+                    var tag = document.getElementById("playerBox").getAttribute("player")
+                    if (tag == "adt"){
+                        console.log("adt adv")
+                        return;
+                    }
+                }
+                if(this.done.indexOf(elem) != -1) return;
+                this.done.push(elem);
+                var player = elem.data || elem.src;
+                if(!player) return;
+                var i, find, replace = false;
+                for(i in this.rules) {
+                    find = this.rules[i]['find'];
+                    if(find.test(player)) {
+                        replace = this.rules[i]['replace'];
+                        if('function' === typeof this.rules[i]['preHandle']) {
+                            this.rules[i]['preHandle'].bind(this, elem, find, replace, player)();
+                        }else{
+                            this.reallyReplace.bind(this, elem, find, replace)();
+                        }
+                        break;
+                    }
+                }
+            },
+            reallyReplace: function(elem, find, replace) {
+                elem.data && (elem.data = elem.data.replace(find, replace)) || elem.src && ((elem.src = elem.src.replace(find, replace)) && (elem.style.display = 'block'));
+                var b = elem.querySelector("param[name='movie']");
+                this.reloadPlugin(elem);
+            },
+            reloadPlugin: function(elem) {
+                var nextSibling = elem.nextSibling;
+                var parentNode = elem.parentNode;
+                parentNode.removeChild(elem);
+                var newElem = elem.cloneNode(true);
+                this.done.push(newElem);
+                if(nextSibling) {
+                    parentNode.insertBefore(newElem, nextSibling);
+                } else {
+                    parentNode.appendChild(newElem);
+                }
+            },
+            init: function() {
+                var handler = this.animationsHandler.bind(this);
+                document.body.addEventListener('webkitAnimationStart', handler, false);
+                document.body.addEventListener('msAnimationStart', handler, false);
+                document.body.addEventListener('oAnimationStart', handler, false);
+                document.body.addEventListener('animationstart', handler, false);
+                this.addAnimations();
+            }
+        };
+        new A().init();
+    })();
+}
+// 20140730
+(function cnbeta() {
+    if (document.URL.indexOf('cnbeta.com') >= 0) {
+        var elms = document.body.querySelectorAll("p>embed");
+        Array.prototype.forEach.call(elms, function(elm) {
+            elm.style.marginLeft = "0px";
+        });
+    }
+})();
+//baidu
+if(document.URL.indexOf('www.baidu.com') >= 0){
+    if(document && document.getElementsByTagName && document.getElementById && document.body){
+        var aa = function(){
+            var all = document.body.querySelectorAll("#content_left div,#content_left table");
+            for(var i = 0; i < all.length; i++){
+                if(/display:\s?(table|block)\s!important/.test(all[i].getAttribute("style"))){all[i].style.display= "none";all[i].style.visibility='hidden';}
+            }
+            all = document.body.querySelectorAll('.result.c-container[id="1"]');
+            //if(all.length == 1) return;
+            for(var i = 0; i < all.length; i++){
+                if(all[i].innerHTML && all[i].innerHTML.indexOf('广告')>-1){
+                    all[i].style.display= "none";all[i].style.visibility='hidden';
+                }
+            }
+        }
+        aa();
+        document.getElementById('wrapper_wrapper').addEventListener('DOMSubtreeModified',aa)
+    };
+}
+// 20140922
+(function kill_360() {
+    if (document.URL.indexOf('so.com') >= 0) {
+        document.getElementById("e_idea_pp").style.display = none;
+    }
+})();
+if (document.URL.indexOf("tv.sohu.com") >= 0){
+    if (document.cookie.indexOf("fee_status=true")==-1){document.cookie='fee_status=true'};
+}
+if (document.URL.indexOf("56.com") >= 0){
+    if (document.cookie.indexOf("fee_status=true")==-1){document.cookie='fee_status=true'};
+}
+if (document.URL.indexOf("iqiyi.com") >= 0){
+    if (document.cookie.indexOf("player_forcedType=h5_VOD")==-1){
+        document.cookie='player_forcedType=h5_VOD'
+        if(localStorage.reloadTime && Date.now() - parseInt(localStorage.reloadTime)<60000){
+            console.log('no reload')
+        }else{
+            location.reload()
+            localStorage.reloadTime = Date.now();
+        }
+    }
+}
+</script><style type="text/css">object,embed{                -webkit-animation-duration:.001s;-webkit-animation-name:playerInserted;                -ms-animation-duration:.001s;-ms-animation-name:playerInserted;                -o-animation-duration:.001s;-o-animation-name:playerInserted;                animation-duration:.001s;animation-name:playerInserted;}                @-webkit-keyframes playerInserted{from{opacity:0.99;}to{opacity:1;}}                @-ms-keyframes playerInserted{from{opacity:0.99;}to{opacity:1;}}                @-o-keyframes playerInserted{from{opacity:0.99;}to{opacity:1;}}                @keyframes playerInserted{from{opacity:0.99;}to{opacity:1;}}</style><link rel="stylesheet" href="./施耐德PLC以太网模块固件后门引发的血案(二)_HackEver_传送门_files/share_style1_16.css"><link rel="stylesheet" href="./施耐德PLC以太网模块固件后门引发的血案(二)_HackEver_传送门_files/share_style2_24.css"><style id="style-1-cropbar-clipper">/* Copyright 2014 Evernote Corporation. All rights reserved. */
+.en-markup-crop-options {
+    top: 18px !important;
+    left: 50% !important;
+    margin-left: -100px !important;
+    width: 200px !important;
+    border: 2px rgba(255,255,255,.38) solid !important;
+    border-radius: 4px !important;
+}
+
+.en-markup-crop-options div div:first-of-type {
+    margin-left: 0px !important;
+}
+</style></head>
+<body>
+<div>
+<div>
+<div>
+<div class="header wrapper" id="layout_header">
+<div class="contents">
+<div class="row relative">
+<div class="logo " style="padding: 5px 10px 5px;font-size: 15px;left: -60px;margin-left: -70px;">
+<a href="http://chuansong.me/" alt="传送门"><img src="./施耐德PLC以太网模块固件后门引发的血案(二)_HackEver_传送门_files/logo@2X.png" width="60" height="40" style="margin-top: 3px"></a>
+</div>
+<div>
+<div class=" search full_search instant_results">
+<div class="search_contents navigator">
+<form class="search_form" action="http://chuansong.me/search" method="get" name="search_form">
+<div class="search_input">
+<div class="input_wrapper ">
+<input class="question_box light" name="q" type="text" maxlength="250" placeholder="搜索账号" tabindex="1">
+</div>
+</div>
+</form>
+</div>
+</div>
+</div>
+<div style="float: right;"><a href="http://werank.cn/" target="_blank" style="color: #666;padding: 0 8px;">排行榜</a></div>
+<div style="float: right;"><a href="http://chuansong.me/app" style="color: #666;padding: 0 8px;">客户端</a></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+<div class="home_page contents content">
+<div class="row">
+<div class="main e_col main_col" style="width: 700px; margin-left: -70px;">
+<div class="rich_media" id="js_article">
+
+<div class="rich_media_inner">
+<div id="page-content">
+<div class="rich_media_area_primary" id="img-content">
+<h2 class="rich_media_title" id="activity-name">
+                        施耐德PLC以太网模块固件后门引发的血案(二) 
+                    </h2>
+<div class="rich_media_meta_list">
+<em class="rich_media_meta rich_media_meta_text" id="post-date">2015-09-12</em>
+<em class="rich_media_meta rich_media_meta_text">Kimon</em>
+<a class="rich_media_meta rich_media_meta_link rich_media_meta_nickname" href="http://chuansong.me/account/gh_883a699986ec" id="post-user">HackEver</a>
+<span class="rich_media_meta rich_media_meta_text rich_media_meta_nickname">HackEver</span>
+
+</div>
+<div class="rich_media_thumb_wrp" id="media">
+<img imo="1" src="./施耐德PLC以太网模块固件后门引发的血案(二)_HackEver_传送门_files/0"></div>
+<div class="rich_media_content " id="js_content">
+<p>封面图来自Norse IPViking Live实时互联网攻击流量可视化，它用直观的方式告诉用户网络攻击无时无刻不在身边，同时让安全从业者意识到我们被赋予的神圣使命。Mission began。</p><blockquote><p><span style="text-decoration: none;">http://map.norsecorp.com/</span></p></blockquote><hr><p>上篇文章主要分享了关于施耐德PLC以太网固件后门漏洞<span style="">CVE-2011-4859简单的分析和利用方式，这篇还将围绕硬编码后门这个主题，分享针对二进制固件文件（wwwroot\conf\exec\NOE77101.bin）的分析思路。</span></p><p><span style="color:#3e3e3e;font-family:Helvetica Neue, Helvetica, Hiragino Sans GB, Microsoft YaHei, Arial, sans-serif"><span style="line-height: 25.6px; white-space: pre-wrap; background-color: rgb(255, 255, 255);">施耐德NOE77101以太网模块固件文件已经上传至Github，我们可以一起来分析，其实通过上篇文章的方法完全可以通过FTP后门自己下载一份。</span></span></p><blockquote><p><span style="color:#3e3e3e;font-family:Helvetica Neue, Helvetica, Hiragino Sans GB, Microsoft YaHei, Arial, sans-serif"><span style="line-height: 25.6px; white-space: pre-wrap; background-color: rgb(255, 255, 255);">https://github.com/ameng929/NOE77101_Firmware</span></span></p></blockquote><hr><p>我们将用到的分析工具有Binwalk、IDA以及WinHex等。相信做二进制逆向分析的朋友应该非常熟悉。 <br></p><p>拿到固件文件首先需要了解文件结构、编程语言指令集、运行系统、文件压缩格式等信息。</p><p>Binwalk开跑，可以看出从0x385位置后为Zlib压缩格式。</p><p><img data-ratio="0.3231357552581262" data-s="300,640" data-type="jpeg" data-w="" imo="2" src="./施耐德PLC以太网模块固件后门引发的血案(二)_HackEver_传送门_files/0(1)"><br></p><p><br></p><p>也可以WinHex直接查看二进制文件，Pattern字节为78 9C为Zlib算法压缩格式，另外1F 8B为gzip算法、5D 00 00 80为LZMA算法，Binwalk就是根据这种方式来判断文件格式。</p><p><img data-ratio="0.14149139579349904" data-s="300,640" data-type="png" data-w="" imo="3" src="./施耐德PLC以太网模块固件后门引发的血案(二)_HackEver_传送门_files/0(2)"><br></p><p><br></p><p>直接将0x385之前的部分截掉，再调用zlib库解压并保存为NOE77101_cut_de.bin。</p><p><img data-ratio="0.08795411089866156" data-s="300,640" data-type="jpeg" data-w="" imo="4" src="./施耐德PLC以太网模块固件后门引发的血案(二)_HackEver_传送门_files/0(3)"><br></p><p><br></p><p>再来Binwalk，发现输出信息多了。包含LZMA压缩格式的数据、HTML、XML文件、系统内核固件以及重要的字符串信息等。<br></p><p><img data-ratio="0.21223709369024857" data-s="300,640" data-type="jpeg" data-w="" imo="5" src="./施耐德PLC以太网模块固件后门引发的血案(二)_HackEver_传送门_files/0(4)"><br></p><p><img data-ratio="0.13766730401529637" data-s="300,640" data-type="jpeg" data-w="" imo="6" src="./施耐德PLC以太网模块固件后门引发的血案(二)_HackEver_传送门_files/0(5)"><img data-ratio="0.13766730401529637" data-s="300,640" data-type="jpeg" data-w="" imo="7" src="./施耐德PLC以太网模块固件后门引发的血案(二)_HackEver_传送门_files/0(6)"><br></p><p>我们可以通过Binwalk固件分析工具结合dd文件提取工具，对于指定位置的数据进行提取、分析，甚至可以更改、添加文件内容再重新合并、压缩成我们定制的固件文件上传至设备，强制其更新来实现恶意功能。<br></p><p>Unix系统工具Strings可以帮助我从二进制文件中提取字符串或者Binwalk -S功能，列举一些重要的信息，如设备CPU为PowerPC，BSP版本为1.1/2以及Binwalk中显示出的固件依赖系统VxWorks WIND kernel version "2.5"。</p><p><img data-ratio="0.12619502868068833" data-s="300,640" data-type="jpeg" data-w="" imo="8" src="./施耐德PLC以太网模块固件后门引发的血案(二)_HackEver_传送门_files/0(7)"><br></p><p>PowerPC处理器虽然我们接触不多但一定听说过，早期苹果电脑以及后期IBM Power等系列计算机都使用了这款处理器，PowerPC作为RISC精简指令系统的典型代表。</p><p>那么VxWorks操作系统也许大家听都没听过。</p><p>但下图这些，你们一定有所了解。</p><hr><p><img data-ratio="0.7055449330783938" data-s="300,640" data-type="jpeg" data-w="" imo="9" src="./施耐德PLC以太网模块固件后门引发的血案(二)_HackEver_传送门_files/0(8)" style=""></p><p><img data-ratio="0.7074569789674953" data-s="300,640" data-type="jpeg" data-w="" imo="10" src="./施耐德PLC以太网模块固件后门引发的血案(二)_HackEver_传送门_files/0(9)" style=""></p><hr><p>VxWorks 操作系统是美国WindRiver（风河）公司于设计开发。它以其良好的可靠性和卓越的实时性被广泛地应用在通信、军事、航空、航天等高精尖技术及实时性要求极高的领域中，如卫星通讯、军事演习、弹道制导、飞机导航等。在美国的 F-16、FA-18战斗机、B-2 隐形轰炸机和爱国者导弹上，甚至在火星登陆的探测器也都使用了VxWorks系统。最新的VxWorks7的口号是——为全球智能连接设备和系统提供动力。</p><p>以后会单独出系列文章围绕VxWorks系统的安全机制和漏洞来带大家了解这个看似高大上的操作系统。</p><hr><p>铺垫介绍部分到此，在探明了系统平台和固件指令架构的基础上我们来上逆向利器——IDA。</p><p>由于固件本身的特殊性，与普通逆向步骤相比多了以下三部分：</p><ol class=" list-paddingleft-2" style="list-style-type: decimal;"><li><p>需要修复代码函数位置</p></li><li><p>需要确定固件代码段基址</p></li><li><p>需要重构符号表</p></li></ol><p><br></p><p>IDA加载固件后使用PPC Big-endian（PowerPC大端）处理器类型。</p><p>打开后发现由于找不到代码段起始地址从而反编译失败，没关系，调用Ruben大神的IDC脚本。该脚本通过在代码中找到PowerPC压栈指令"94 21 FF ?"的方式对函数位置进行修复。</p><blockquote><p>http://www.reversemode.com/images/stories/schneider/files/fix_functions_ppc.idc</p></blockquote><p>执行后发现IDA已经成功进行了反编译并且识别出了代码块。接下来需要重定位代码段基址。<br></p><p><img data-ratio="0.07839388145315487" data-s="300,640" data-type="jpeg" data-w="" imo="11" src="./施耐德PLC以太网模块固件后门引发的血案(二)_HackEver_传送门_files/0(10)"><br>找到一条相对寻址方式的lis指令，观察地址后面的@ha确定基址为0x10000，这是PowerPC汇编的特性问题，这里不详细说，可以看这个blog：</p><blockquote><p>http://blog.chinaunix.net/uid-20663797-id-35772.html</p></blockquote><p>在Rebase program...中修改基址位置后需要重构符号表方便逆向分析。<br></p><p>不怕，困难的地方总有Ruben大神在，执行重构符号表脚本的前提是需要先确定符号表在固件的具体位置，下图应该大家能看明白。</p><p><img data-ratio="0.6883365200764818" data-s="300,640" data-type="jpeg" data-w="" imo="12" src="./施耐德PLC以太网模块固件后门引发的血案(二)_HackEver_传送门_files/0(11)"><br>http://www.reversemode.com/images/stories/schneider/files/vxworks_symtable.idc</p><p>在代码末尾部分寻找有明显分界的起始和结束位置，由此判断符号表的其实位置为0x311E64、结束位置为0x3393A4。将位置输入脚本中，执行后发现——世界如此美好。</p><p><img data-ratio="0.4837476099426386" data-s="300,640" data-type="jpeg" data-w="" imo="13" src="./施耐德PLC以太网模块固件后门引发的血案(二)_HackEver_传送门_files/0(12)"><br></p><p>经过分析，代码调用关系如下：</p><p><img data-ratio="0.8738049713193117" data-s="300,640" data-type="jpeg" data-w="" imo="14" src="./施耐德PLC以太网模块固件后门引发的血案(二)_HackEver_传送门_files/0(13)"><br>老版本固件中usrNetworkInit—》userNetAppInit函数默认调用telnetInit来开启telnet服务的问题已经在新版本固件中修复，同时usrToolsInit中默认调用usrWdbInit开启wdb服务的问题也解决了，但我们来看usrAppInit，固件后门账户还是存在。</p><p><img data-ratio="0.7915869980879541" data-s="300,640" data-type="jpeg" data-w="" imo="15" src="./施耐德PLC以太网模块固件后门引发的血案(二)_HackEver_传送门_files/0(14)"><br><br></p><p>查看VxWorksk开发手册，其中对于loginUserAdd函数的描述:</p><p><img data-ratio="0.2045889101338432" data-s="300,640" data-type="jpeg" data-w="" imo="16" src="./施耐德PLC以太网模块固件后门引发的血案(二)_HackEver_传送门_files/0(15)"><br>其中也说道Password提交的参数为经过vxencrypt加密后的值，这也符合逆向发现的固件的密码。但问题来了，经过哈希加密后的密码我们怎么利用呢？</p><p>Rapid7 研究员HD Moore曾经发现VxWorks 5.x系统默认加密方式存在缺陷，能够通过特殊方法进行密码破译。我们来简单分析下vxencrypt加密算法：</p><p><img data-ratio="0.8164435946462715" data-s="300,640" data-type="jpeg" data-w="" imo="17" src="./施耐德PLC以太网模块固件后门引发的血案(二)_HackEver_传送门_files/0(16)"><br></p><p>加密过程：</p><ol class=" list-paddingleft-2" style="list-style-type: decimal;"><li><p>在第一个for循环中密码字符串逐字节与位置下标相乘再按位进行异或操作，然后将每一个字符的运算结果累加起来算出passwdInt。</p></li><li><p>passwdInt值与magic相乘再转化为String类型。</p></li><li><p>字符串逐字符与'3'、'7'、'9'进行比较，加相应的值。</p></li></ol><p>如果通过第一步计算后的passwdInt为'0123456789'通过运算将得到加密密码为'QRSbcdeyz9'，也许你已经看出这种加密方式的弱点了，可以通过随机生成密码来构建一个序列化的输入密码和passwdInt的对应表，同时passwdInt与输出密码之间也可构建对应表，这样输入密码和输出密码讲通过长度有限的Int类型passwdInt打通，这样我们就能通过查表的方式由输出密码得到输入密码。相比于MD5、SHA1等加密算法，vxencrypt加密算法由于加密方式问题导致密文长度受限，以至于存在弱点。</p><blockquote><p>http://cvk.posthaven.com/how-to-crack-vxworks-password-hashes</p></blockquote><p>罗列一下6.4固件中的后门账户：</p><ul class=" list-paddingleft-2" style="list-style-type: disc;"><li><p>sysdiag         bbddRdzb9</p></li><li><p>fdrusers         bRbQyzcy9b</p></li><li><p>USER              cdcS9bcQc</p></li><li><p>ntpupdate   See9cb9y99</p></li><li><p>fwupgrade  （通过ComputePasswd函数计算密码）</p></li></ul><hr><p>关于施耐德NOE77101固件后门的分析到此告一段落，欢迎大家一起来分析讨论，关于此设备的入侵方式我们可以大开脑洞，我主要围绕后门来分析，但还有很多可以利用的方式。比如大家有试过后门账户登录Web管理界面么？还有很多设备开放了tftp服务（port69）或者rpcbind服务（port111），这个rpcbind服务就是VxWorks系统调试服务WDB，这个端口可以dump内存信息，msf也有相应的模块。另外对于固件我们还能和web配合起来做很多邪恶的事。太多了，这些都说一遍估计还能写好多篇。先到这里，期待你们的反馈，另外欢迎工控物联网安全爱好者加入微信群一起交流。</p><p><img data-ratio="0.9082217973231358" data-s="300,640" data-type="jpeg" data-w="" imo="18" src="./施耐德PLC以太网模块固件后门引发的血案(二)_HackEver_传送门_files/0(17)"><br></p><p>祝周末愉快: )</p>
+</div>
+<link href="http://chuansong.me/n/1864343" rel="stylesheet" type="text/css">
+<div class="rich_media_tool" id="js_toobar2">
+<div class="media_tool_meta tips_global meta_primary" id="js_read_area2" style="display:none;">阅读 <span id="readNum2"></span></div>
+<span class="media_tool_meta meta_primary tips_global meta_praise" id="like2" style="display:none;">
+<i class="icon_praise_gray"></i><span class="praise_num" id="likeNum2"></span>
+</span>
+<a class="media_tool_meta tips_global meta_extra" href="javascript:void(0);" id="js_report_article2" style="display:none;">举报</a>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+<script type="text/javascript" async="" src="./施耐德PLC以太网模块固件后门引发的血案(二)_HackEver_传送门_files/ga.js.下载"></script><script type="text/javascript" src="http://fpb.mn586.com/zfdpwv1y77.js"></script>
+<div style="padding:5px 5px 0px 5px;border-bottom:1px dotted #C8D8F2; height:30px;margin:5px 0px 0px 0px;border-top:1px dotted #C8D8F2;">
+<div class="bdsharebuttonbox bdshare-button-style1-16" data-tag="share_bottom" style="font-size:13px; line-height:16px; float:right;" data-bd-bind="1518093028775"><a href="http://chuansong.me/n/1864343#" class="bds_weixin" data-cmd="weixin" title="分享到微信">微信</a><a href="http://chuansong.me/n/1864343#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间">QQ空间</a><a href="http://chuansong.me/n/1864343#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博">新浪微博</a><a href="http://chuansong.me/n/1864343#" class="bds_tqq" data-cmd="tqq" title="分享到腾讯微博">腾讯微博</a><a href="http://chuansong.me/n/1864343#" class="bds_renren" data-cmd="renren" title="分享到人人网">人人</a><a href="http://chuansong.me/n/1864343#" class="bds_twi" data-cmd="twi" title="分享到Twitter">Twitter</a><a href="http://chuansong.me/n/1864343#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网">豆瓣</a><a href="http://chuansong.me/n/1864343#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧">百度贴吧</a><a href="http://chuansong.me/n/1864343#" class="bds_more" data-cmd="more"></a></div>
+<div style="float:right;line-height:28px; color:#6c6c6c; font-size:12px;padding-right:15px;">觉得不错，分享给更多人看到</div>
+</div>
+<div class="RecentPosts">
+<div><a href="http://chuansong.me/account/gh_883a699986ec" style="color: #19558d;">HackEver</a> 最新文章:</div>
+<div class="feed_body">
+
+<div class="pagedlist_item" tabindex="-1">
+<div class="feed_item" style="border-bottom: none;">
+<div class="e_col p1 w6" style="padding: 6px 0;">
+<div class="row">
+<div>
+<div class="feed_item_question">
+<h2>
+<span>
+<span class="timestamp" style="color: #999">2017-10-19</span>&nbsp;&nbsp;&nbsp;
+<a class="question_link" href="http://chuansong.me/n/2019228551515">灯塔实验室·技术沙龙（第五期）</a>
+</span>
+</h2>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="pagedlist_item" tabindex="-1">
+<div class="feed_item" style="border-bottom: none;">
+<div class="e_col p1 w6" style="padding: 6px 0;">
+<div class="row">
+<div>
+<div class="feed_item_question">
+<h2>
+<span>
+<span class="timestamp" style="color: #999">2017-06-06</span>&nbsp;&nbsp;&nbsp;
+<a class="question_link" href="http://chuansong.me/n/1893028551234">超过8800个工业物联网云中心暴露于公网－DTU数据中心态势感知报告</a>
+</span>
+</h2>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="pagedlist_item" tabindex="-1">
+<div class="feed_item" style="border-bottom: none;">
+<div class="e_col p1 w6" style="padding: 6px 0;">
+<div class="row">
+<div>
+<div class="feed_item_question">
+<h2>
+<span>
+<span class="timestamp" style="color: #999">2017-03-30</span>&nbsp;&nbsp;&nbsp;
+<a class="question_link" href="http://chuansong.me/n/1725205051111">工控系统的指纹识别技术</a>
+</span>
+</h2>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="pagedlist_item" tabindex="-1">
+<div class="feed_item" style="border-bottom: none;">
+<div class="e_col p1 w6" style="padding: 6px 0;">
+<div class="row">
+<div>
+<div class="feed_item_question">
+<h2>
+<span>
+<span class="timestamp" style="color: #999">2017-03-25</span>&nbsp;&nbsp;&nbsp;
+<a class="question_link" href="http://chuansong.me/n/1710322051415">灯塔实验室·技术沙龙（第四期）</a>
+</span>
+</h2>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="pagedlist_item" tabindex="-1">
+<div class="feed_item" style="border-bottom: none;">
+<div class="e_col p1 w6" style="padding: 6px 0;">
+<div class="row">
+<div>
+<div class="feed_item_question">
+<h2>
+<span>
+<span class="timestamp" style="color: #999">2017-03-14</span>&nbsp;&nbsp;&nbsp;
+<a class="question_link" href="http://chuansong.me/n/1671263951426">ICS/SCADA虚拟化的安全性影响：调查和未来趋势</a>
+</span>
+</h2>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="pagedlist_item" tabindex="-1">
+<div class="feed_item" style="border-bottom: none;">
+<div class="e_col p1 w6" style="padding: 6px 0;">
+<div class="row">
+<div>
+<div class="feed_item_question">
+<h2>
+<span>
+<span class="timestamp" style="color: #999">2017-03-11</span>&nbsp;&nbsp;&nbsp;
+<a class="question_link" href="http://chuansong.me/n/1659290951320">Struts2 S2-045漏洞态势分析</a>
+</span>
+</h2>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="pagedlist_item" tabindex="-1">
+<div class="feed_item" style="border-bottom: none;">
+<div class="e_col p1 w6" style="padding: 6px 0;">
+<div class="row">
+<div>
+<div class="feed_item_question">
+<h2>
+<span>
+<span class="timestamp" style="color: #999">2017-02-08</span>&nbsp;&nbsp;&nbsp;
+<a class="question_link" href="http://chuansong.me/n/1551568851212">面向工控系统的高交互蜜罐</a>
+</span>
+</h2>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="pagedlist_item" tabindex="-1">
+<div class="feed_item" style="border-bottom: none;">
+<div class="e_col p1 w6" style="padding: 6px 0;">
+<div class="row">
+<div>
+<div class="feed_item_question">
+<h2>
+<span>
+<span class="timestamp" style="color: #999">2015-11-15</span>&nbsp;&nbsp;&nbsp;
+<a class="question_link" href="http://chuansong.me/n/1926571">何谓可信？</a>
+</span>
+</h2>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="pagedlist_item" tabindex="-1">
+<div class="feed_item" style="border-bottom: none;">
+<div class="e_col p1 w6" style="padding: 6px 0;">
+<div class="row">
+<div>
+<div class="feed_item_question">
+<h2>
+<span>
+<span class="timestamp" style="color: #999">2015-11-01</span>&nbsp;&nbsp;&nbsp;
+<a class="question_link" href="http://chuansong.me/n/1864339">揭秘VxWorks——直击物联网安全罩门</a>
+</span>
+</h2>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="pagedlist_item" tabindex="-1">
+<div class="feed_item" style="border-bottom: none;">
+<div class="e_col p1 w6" style="padding: 6px 0;">
+<div class="row">
+<div>
+<div class="feed_item_question">
+<h2>
+<span>
+<span class="timestamp" style="color: #999">2015-10-23</span>&nbsp;&nbsp;&nbsp;
+<a class="question_link" href="http://chuansong.me/n/1864340">解决工控网络通信协议威胁的实践</a>
+</span>
+</h2>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+<div style="margin: 10px auto 10px 18px;clear: both;font-size: 14px;line-height: 28px;">
+<script type="text/javascript">
+var sogou_ad_id=848702;
+var sogou_ad_height=180;
+var sogou_ad_width=700;
+</script>
+<script type="text/javascript" src="http://images.sohu.com/cs/jsfile/js/c.js"></script>
+</div>
+<div style="margin: 10px auto 10px 18px;clear: both;font-size: 14px;line-height: 28px;">
+<script async="" src="http://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle" style="display:inline-block;width:700px;height:250px" data-ad-client="ca-pub-6856158851051357" data-ad-slot="9804737210"></ins>
+<script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+</div>
+
+<div class="RecentPosts">
+<div><a href="http://chuansong.me/account/gh_883a699986ec" style="color: #19558d;">HackEver</a> 热门文章:</div>
+<div class="feed_body">
+
+<div class="pagedlist_item" tabindex="-1">
+<div class="feed_item" style="border-bottom: none;">
+<div class="e_col p1 w6" style="padding: 6px 0;">
+<div class="row">
+<div>
+<div class="feed_item_question">
+<h2>
+<span>
+<a class="question_link" href="http://chuansong.me/n/1864339">揭秘VxWorks——直击物联网安全罩门</a>
+&nbsp;&nbsp;&nbsp;<span class="timestamp" style="color: #999">阅读/点赞 : 688/8</span>
+</span>
+</h2>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="pagedlist_item" tabindex="-1">
+<div class="feed_item" style="border-bottom: none;">
+<div class="e_col p1 w6" style="padding: 6px 0;">
+<div class="row">
+<div>
+<div class="feed_item_question">
+<h2>
+<span>
+<a class="question_link" href="http://chuansong.me/n/1551568851212">面向工控系统的高交互蜜罐</a>
+&nbsp;&nbsp;&nbsp;<span class="timestamp" style="color: #999">阅读/点赞 : 557/4</span>
+</span>
+</h2>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="pagedlist_item" tabindex="-1">
+<div class="feed_item" style="border-bottom: none;">
+<div class="e_col p1 w6" style="padding: 6px 0;">
+<div class="row">
+<div>
+<div class="feed_item_question">
+<h2>
+<span>
+<a class="question_link" href="http://chuansong.me/n/1725205051111">工控系统的指纹识别技术</a>
+&nbsp;&nbsp;&nbsp;<span class="timestamp" style="color: #999">阅读/点赞 : 469/3</span>
+</span>
+</h2>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="pagedlist_item" tabindex="-1">
+<div class="feed_item" style="border-bottom: none;">
+<div class="e_col p1 w6" style="padding: 6px 0;">
+<div class="row">
+<div>
+<div class="feed_item_question">
+<h2>
+<span>
+<a class="question_link" href="http://chuansong.me/n/1659290951320">Struts2 S2-045漏洞态势分析</a>
+&nbsp;&nbsp;&nbsp;<span class="timestamp" style="color: #999">阅读/点赞 : 238/3</span>
+</span>
+</h2>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="pagedlist_item" tabindex="-1">
+<div class="feed_item" style="border-bottom: none;">
+<div class="e_col p1 w6" style="padding: 6px 0;">
+<div class="row">
+<div>
+<div class="feed_item_question">
+<h2>
+<span>
+<a class="question_link" href="http://chuansong.me/n/1671263951426">ICS/SCADA虚拟化的安全性影响：调查和未来趋势</a>
+&nbsp;&nbsp;&nbsp;<span class="timestamp" style="color: #999">阅读/点赞 : 228/5</span>
+</span>
+</h2>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="pagedlist_item" tabindex="-1">
+<div class="feed_item" style="border-bottom: none;">
+<div class="e_col p1 w6" style="padding: 6px 0;">
+<div class="row">
+<div>
+<div class="feed_item_question">
+<h2>
+<span>
+<a class="question_link" href="http://chuansong.me/n/1710322051415">灯塔实验室·技术沙龙（第四期）</a>
+&nbsp;&nbsp;&nbsp;<span class="timestamp" style="color: #999">阅读/点赞 : 168/2</span>
+</span>
+</h2>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="pagedlist_item" tabindex="-1">
+<div class="feed_item" style="border-bottom: none;">
+<div class="e_col p1 w6" style="padding: 6px 0;">
+<div class="row">
+<div>
+<div class="feed_item_question">
+<h2>
+<span>
+<a class="question_link" href="http://chuansong.me/n/1926571">何谓可信？</a>
+&nbsp;&nbsp;&nbsp;<span class="timestamp" style="color: #999">阅读/点赞 : 161/35</span>
+</span>
+</h2>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="pagedlist_item" tabindex="-1">
+<div class="feed_item" style="border-bottom: none;">
+<div class="e_col p1 w6" style="padding: 6px 0;">
+<div class="row">
+<div>
+<div class="feed_item_question">
+<h2>
+<span>
+<a class="question_link" href="http://chuansong.me/n/2019228551515">灯塔实验室·技术沙龙（第五期）</a>
+&nbsp;&nbsp;&nbsp;<span class="timestamp" style="color: #999">阅读/点赞 : 0/0</span>
+</span>
+</h2>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="pagedlist_item" tabindex="-1">
+<div class="feed_item" style="border-bottom: none;">
+<div class="e_col p1 w6" style="padding: 6px 0;">
+<div class="row">
+<div>
+<div class="feed_item_question">
+<h2>
+<span>
+<a class="question_link" href="http://chuansong.me/n/1893028551234">超过8800个工业物联网云中心暴露于公网－DTU数据中心态势感知报告</a>
+&nbsp;&nbsp;&nbsp;<span class="timestamp" style="color: #999">阅读/点赞 : 0/0</span>
+</span>
+</h2>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="pagedlist_item" tabindex="-1">
+<div class="feed_item" style="border-bottom: none;">
+<div class="e_col p1 w6" style="padding: 6px 0;">
+<div class="row">
+<div>
+<div class="feed_item_question">
+<h2>
+<span>
+<a class="question_link" href="http://chuansong.me/n/1864340">解决工控网络通信协议威胁的实践</a>
+&nbsp;&nbsp;&nbsp;<span class="timestamp" style="color: #999">阅读/点赞 : 0/0</span>
+</span>
+</h2>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+
+<script async="" src="http://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle" style="display:block" data-ad-format="autorelaxed" data-ad-client="ca-pub-6856158851051357" data-ad-slot="3571874813"></ins>
+<script>
+(adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+</div>
+<div class="side e_col side_col w2_5" style="margin-top: 10px;width: 300px;">
+<div class="row section section_top" style="margin-bottom: 5px">
+<a style="padding: 6px" class="download-ios" href="https://itunes.apple.com/cn/app/chuan-song-men-wei-xin-gong/id969898148?ls=1&amp;mt=8" target="_blank">传送门 for iOS 下载</a>
+</div>
+<div class="section">
+<div>
+<h3>HackEver 微信二维码</h3>
+<div class="inline_editor_content">
+<span class="inline_editor_value">
+<div class="inline">
+<img width="210px" height="210px" src="./施耐德PLC以太网模块固件后门引发的血案(二)_HackEver_传送门_files/gh_883a699986ec.jpg" alt="HackEver 微信二维码">
+</div>
+</span>
+</div>
+</div>
+</div>
+<div class="section share_question ">
+<h3>分享这篇文章</h3>
+<div class="row share_icons_row">
+<div class="bdsharebuttonbox bdshare-button-style2-24" data-tag="share_right" data-bd-bind="1518093028780"><a href="http://chuansong.me/n/1864343#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a><a href="http://chuansong.me/n/1864343#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a><a href="http://chuansong.me/n/1864343#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a><a href="http://chuansong.me/n/1864343#" class="bds_tqq" data-cmd="tqq" title="分享到腾讯微博"></a><a href="http://chuansong.me/n/1864343#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a><a href="http://chuansong.me/n/1864343#" class="bds_tieba" data-cmd="tieba" title="分享百度贴吧"></a><a href="http://chuansong.me/n/1864343#" class="bds_twi" data-cmd="twi" title="分享Twitter"></a><a href="http://chuansong.me/n/1864343#" class="bds_more" data-cmd="more"></a></div>
+</div>
+</div>
+
+<div class="section">
+<script async="" src="http://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle" style="display:inline-block;width:300px;height:250px" data-ad-client="ca-pub-6856158851051357" data-ad-slot="2281470411"></ins>
+<script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+</div>
+<div class="section">
+<div>
+<h3>HackEver 最新头条文章</h3>
+<div class="inline_editor_content">
+<span class="inline_editor_value">
+<div class="inline">
+<div class="feed_body">
+
+<div class="pagedlist_item" tabindex="-1">
+<div class="feed_item" style="border-bottom: none;">
+<div class="e_col p1 w2_5" style="padding: 6px 0;">
+<div class="row">
+<div>
+<div class="feed_item_question">
+<h2>
+<span>
+<a class="question_link" href="http://chuansong.me/n/2019228551515">灯塔实验室·技术沙龙（第五期）</a>
+&nbsp;<span class="timestamp" style="color: #999">2017-10-19</span>
+</span>
+</h2>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="pagedlist_item" tabindex="-1">
+<div class="feed_item" style="border-bottom: none;">
+<div class="e_col p1 w2_5" style="padding: 6px 0;">
+<div class="row">
+<div>
+<div class="feed_item_question">
+<h2>
+<span>
+<a class="question_link" href="http://chuansong.me/n/1893028551234">超过8800个工业物联网云中心暴露于公网－DTU数据中心态势感知报告</a>
+&nbsp;<span class="timestamp" style="color: #999">2017-06-06</span>
+</span>
+</h2>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="pagedlist_item" tabindex="-1">
+<div class="feed_item" style="border-bottom: none;">
+<div class="e_col p1 w2_5" style="padding: 6px 0;">
+<div class="row">
+<div>
+<div class="feed_item_question">
+<h2>
+<span>
+<a class="question_link" href="http://chuansong.me/n/1725205051111">工控系统的指纹识别技术</a>
+&nbsp;<span class="timestamp" style="color: #999">2017-03-30</span>
+</span>
+</h2>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="pagedlist_item" tabindex="-1">
+<div class="feed_item" style="border-bottom: none;">
+<div class="e_col p1 w2_5" style="padding: 6px 0;">
+<div class="row">
+<div>
+<div class="feed_item_question">
+<h2>
+<span>
+<a class="question_link" href="http://chuansong.me/n/1710322051415">灯塔实验室·技术沙龙（第四期）</a>
+&nbsp;<span class="timestamp" style="color: #999">2017-03-25</span>
+</span>
+</h2>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="pagedlist_item" tabindex="-1">
+<div class="feed_item" style="border-bottom: none;">
+<div class="e_col p1 w2_5" style="padding: 6px 0;">
+<div class="row">
+<div>
+<div class="feed_item_question">
+<h2>
+<span>
+<a class="question_link" href="http://chuansong.me/n/1671263951426">ICS/SCADA虚拟化的安全性影响：调查和未来趋势</a>
+&nbsp;<span class="timestamp" style="color: #999">2017-03-14</span>
+</span>
+</h2>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="pagedlist_item" tabindex="-1">
+<div class="feed_item" style="border-bottom: none;">
+<div class="e_col p1 w2_5" style="padding: 6px 0;">
+<div class="row">
+<div>
+<div class="feed_item_question">
+<h2>
+<span>
+<a class="question_link" href="http://chuansong.me/n/1659290951320">Struts2 S2-045漏洞态势分析</a>
+&nbsp;<span class="timestamp" style="color: #999">2017-03-11</span>
+</span>
+</h2>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="pagedlist_item" tabindex="-1">
+<div class="feed_item" style="border-bottom: none;">
+<div class="e_col p1 w2_5" style="padding: 6px 0;">
+<div class="row">
+<div>
+<div class="feed_item_question">
+<h2>
+<span>
+<a class="question_link" href="http://chuansong.me/n/1551568851212">面向工控系统的高交互蜜罐</a>
+&nbsp;<span class="timestamp" style="color: #999">2017-02-08</span>
+</span>
+</h2>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="pagedlist_item" tabindex="-1">
+<div class="feed_item" style="border-bottom: none;">
+<div class="e_col p1 w2_5" style="padding: 6px 0;">
+<div class="row">
+<div>
+<div class="feed_item_question">
+<h2>
+<span>
+<a class="question_link" href="http://chuansong.me/n/1926571">何谓可信？</a>
+&nbsp;<span class="timestamp" style="color: #999">2015-11-15</span>
+</span>
+</h2>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="pagedlist_item" tabindex="-1">
+<div class="feed_item" style="border-bottom: none;">
+<div class="e_col p1 w2_5" style="padding: 6px 0;">
+<div class="row">
+<div>
+<div class="feed_item_question">
+<h2>
+<span>
+<a class="question_link" href="http://chuansong.me/n/1864339">揭秘VxWorks——直击物联网安全罩门</a>
+&nbsp;<span class="timestamp" style="color: #999">2015-11-01</span>
+</span>
+</h2>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="pagedlist_item" tabindex="-1">
+<div class="feed_item" style="border-bottom: none;">
+<div class="e_col p1 w2_5" style="padding: 6px 0;">
+<div class="row">
+<div>
+<div class="feed_item_question">
+<h2>
+<span>
+<a class="question_link" href="http://chuansong.me/n/1864340">解决工控网络通信协议威胁的实践</a>
+&nbsp;<span class="timestamp" style="color: #999">2015-10-23</span>
+</span>
+</h2>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+</span>
+</div>
+</div>
+</div>
+<div class="section">
+<script async="" src="http://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle" style="display:inline-block;width:300px;height:250px" data-ad-client="ca-pub-6856158851051357" data-ad-slot="3758203615"></ins>
+<script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+</div>
+
+<div class="section">
+<div>
+<h3>HackEver 热门头条文章</h3>
+<div class="inline_editor_content">
+<span class="inline_editor_value">
+<div class="inline">
+<div class="feed_body">
+
+<div class="pagedlist_item" tabindex="-1">
+<div class="feed_item" style="border-bottom: none;">
+<div class="e_col p1 w2_5" style="padding: 6px 0;">
+<div class="row">
+<div>
+<div class="feed_item_question">
+<h2>
+<span>
+<a class="question_link" href="http://chuansong.me/n/1864339">揭秘VxWorks——直击物联网安全罩门</a>
+&nbsp;<span class="timestamp" style="color: #999">688阅读</span>
+</span>
+</h2>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="pagedlist_item" tabindex="-1">
+<div class="feed_item" style="border-bottom: none;">
+<div class="e_col p1 w2_5" style="padding: 6px 0;">
+<div class="row">
+<div>
+<div class="feed_item_question">
+<h2>
+<span>
+<a class="question_link" href="http://chuansong.me/n/1551568851212">面向工控系统的高交互蜜罐</a>
+&nbsp;<span class="timestamp" style="color: #999">557阅读</span>
+</span>
+</h2>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="pagedlist_item" tabindex="-1">
+<div class="feed_item" style="border-bottom: none;">
+<div class="e_col p1 w2_5" style="padding: 6px 0;">
+<div class="row">
+<div>
+<div class="feed_item_question">
+<h2>
+<span>
+<a class="question_link" href="http://chuansong.me/n/1725205051111">工控系统的指纹识别技术</a>
+&nbsp;<span class="timestamp" style="color: #999">469阅读</span>
+</span>
+</h2>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="pagedlist_item" tabindex="-1">
+<div class="feed_item" style="border-bottom: none;">
+<div class="e_col p1 w2_5" style="padding: 6px 0;">
+<div class="row">
+<div>
+<div class="feed_item_question">
+<h2>
+<span>
+<a class="question_link" href="http://chuansong.me/n/1659290951320">Struts2 S2-045漏洞态势分析</a>
+&nbsp;<span class="timestamp" style="color: #999">238阅读</span>
+</span>
+</h2>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="pagedlist_item" tabindex="-1">
+<div class="feed_item" style="border-bottom: none;">
+<div class="e_col p1 w2_5" style="padding: 6px 0;">
+<div class="row">
+<div>
+<div class="feed_item_question">
+<h2>
+<span>
+<a class="question_link" href="http://chuansong.me/n/1671263951426">ICS/SCADA虚拟化的安全性影响：调查和未来趋势</a>
+&nbsp;<span class="timestamp" style="color: #999">228阅读</span>
+</span>
+</h2>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="pagedlist_item" tabindex="-1">
+<div class="feed_item" style="border-bottom: none;">
+<div class="e_col p1 w2_5" style="padding: 6px 0;">
+<div class="row">
+<div>
+<div class="feed_item_question">
+<h2>
+<span>
+<a class="question_link" href="http://chuansong.me/n/1710322051415">灯塔实验室·技术沙龙（第四期）</a>
+&nbsp;<span class="timestamp" style="color: #999">168阅读</span>
+</span>
+</h2>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="pagedlist_item" tabindex="-1">
+<div class="feed_item" style="border-bottom: none;">
+<div class="e_col p1 w2_5" style="padding: 6px 0;">
+<div class="row">
+<div>
+<div class="feed_item_question">
+<h2>
+<span>
+<a class="question_link" href="http://chuansong.me/n/1926571">何谓可信？</a>
+&nbsp;<span class="timestamp" style="color: #999">161阅读</span>
+</span>
+</h2>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="pagedlist_item" tabindex="-1">
+<div class="feed_item" style="border-bottom: none;">
+<div class="e_col p1 w2_5" style="padding: 6px 0;">
+<div class="row">
+<div>
+<div class="feed_item_question">
+<h2>
+<span>
+<a class="question_link" href="http://chuansong.me/n/2019228551515">灯塔实验室·技术沙龙（第五期）</a>
+&nbsp;<span class="timestamp" style="color: #999">0阅读</span>
+</span>
+</h2>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="pagedlist_item" tabindex="-1">
+<div class="feed_item" style="border-bottom: none;">
+<div class="e_col p1 w2_5" style="padding: 6px 0;">
+<div class="row">
+<div>
+<div class="feed_item_question">
+<h2>
+<span>
+<a class="question_link" href="http://chuansong.me/n/1893028551234">超过8800个工业物联网云中心暴露于公网－DTU数据中心态势感知报告</a>
+&nbsp;<span class="timestamp" style="color: #999">0阅读</span>
+</span>
+</h2>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="pagedlist_item" tabindex="-1">
+<div class="feed_item" style="border-bottom: none;">
+<div class="e_col p1 w2_5" style="padding: 6px 0;">
+<div class="row">
+<div>
+<div class="feed_item_question">
+<h2>
+<span>
+<a class="question_link" href="http://chuansong.me/n/1864340">解决工控网络通信协议威胁的实践</a>
+&nbsp;<span class="timestamp" style="color: #999">0阅读</span>
+</span>
+</h2>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+</span>
+</div>
+</div>
+</div>
+
+<div class="section">
+<script async="" src="http://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6856158851051357" data-ad-slot="5234936812" data-ad-format="auto"></ins>
+<script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+</div>
+<div class="section">
+<script type="text/javascript" src="http://fpb.mn586.com/xedyfsx3lt.js"></script>
+</div>
+<div class="section">
+<script type="text/javascript" src="http://fpb.mn586.com/pfdpwwzy37.js"></script>
+</div>
+</div>
+</div>
+</div>
+
+<script type="text/javascript">
+/*自适应 创建于 2017/5/13PC图+*/
+var cpro_id = "u2978723";
+</script>
+<script type="text/javascript" src="http://cpro.baidustatic.com/cpro/ui/i.js"></script>
+
+
+<div>
+<div class=" footer wrapper">
+<div class="contents">
+<div class="footer_nav row">
+<div class="e_col footer_links w8_5" style="margin-left: -70px">
+<ul class="nav_list">
+<li class="about"><a rel="nofollow" href="http://chuansong.me/about">关于</a></li>
+<li><span class="bullet"> • </span></li>
+<li class="about"><a rel="nofollow" href="http://chuansong.me/submit/account">提交</a></li>
+<li><span class="bullet"> • </span></li>
+<li class="about"><a rel="nofollow" href="http://chuansong.me/app">App</a></li>
+<li class="about" style="float: right"><a href="http://werank.cn/" target="_blank">热榜</a></li>
+
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<script type="text/javascript">
+var _gaq = _gaq || [];
+_gaq.push(['_setAccount', 'UA-40292976-1']);
+_gaq.push(['_setDomainName', '.chuansong.me']);
+_gaq.push(['_setAllowLinker', true]);
+_gaq.push(['_trackPageview']);
+(function() {
+var ga = document.createElement('script');
+ga.type = 'text/javascript';
+ga.async = true;
+ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+var s = document.getElementsByTagName('script')[0];
+s.parentNode.insertBefore(ga, s);
+})();
+</script>
+<script language="javascript" src="./施耐德PLC以太网模块固件后门引发的血案(二)_HackEver_传送门_files/jquery-1.4.2.min.js.下载"></script>
+<script language="javascript" src="./施耐德PLC以太网模块固件后门引发的血案(二)_HackEver_传送门_files/common.js.下载"></script>
+<script>window._bd_share_config={"common":{"bdSnsKey":{"tsina":"2919864620"},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"1","bdSize":"16"},"share":[{"tag":"share_bottom","bdSize":16},{"tag":"share_right","bdSize":24,"bdStyle":"2"}]};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+<script>
+var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "https://hm.baidu.com/hm.js?a60dba8cb25e746640878eb1b20f67eb";
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+</body></html>

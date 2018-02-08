@@ -1,0 +1,590 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- saved from url=(0063)http://www.360doc.com/content/15/1018/18/471722_506538554.shtml -->
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><script type="text/javascript" charset="gbk" id="tanx-s-mm_11220363_1101997_26568831" async="" src="http://p.tanx.com/ex?i=mm_11220363_1101997_26568831"></script>
+<script src="./施耐德PLC以太网模块固件后门引发的血案_files/hm.js.下载"></script><script type="text/javascript">
+        if (window.location.toString().indexOf("shtml?") > 0) {
+            self.location = window.location.toString().replace(window.location.search.toString(), "");
+        }
+        function doccheckart(json) {
+            if (json[0].result == "1") {
+                self.location = "http://www.360doc.com/noarticle.aspx";
+            }
+        }
+    </script>
+<script src="./施耐德PLC以太网模块固件后门引发的血案_files/jquery1.js.下载" type="text/javascript" charset="utf-8"></script><style type="text/css" abt="234"></style>
+<script type="text/javascript">
+        if (navigator.userAgent.indexOf("iPhone") > 0 || navigator.userAgent.indexOf("Android") > 0 || navigator.userAgent.indexOf("iPod") > 0) {  //手机端跳转
+            var patt1 = new RegExp("[0-9]*_[0-9]*");
+            var url = patt1.exec(location.href);
+            if (url != "") {
+                self.location = "http://www.360doc.cn/article/" + url + ".html";
+            }
+        }
+    </script>
+<meta content="360doc" name="classification"><link rel="alternate" media="only screen and (max-width: 640px)" href="http://www.360doc.cn/article/471722_506538554.html"><meta content="固件,耐德,wwwroot" name="keywords"><meta content="施耐德PLC以太网模块固件后门引发的血案" name="description"><meta name="mobile-agent" content="format=html5;url=http://www.360doc.cn/article/471722_506538554.html"><meta content="施耐德PLC以太网模块固件后门引发的血案。漏洞利用结果不尽如人意，虽然利用固件账户登录了FTP服务器，然而可能是更新了固件导致账户不具备访问权限。登录后进入了固件根目录，能对所有文件进行上传下载，能获取到可执行固件NOE77101.bin，还可以修改固件注入恶意代码上传至远程设备。下载了所有文件以供后续分析，另外查看二进制文件发现该固件是2014年11月14日的固件，版本为6.40，也就是官方声明漏洞已经修复后的固件版本！" name="360docabstract"><meta content="www.360doc.com" name="author"><title>
+施耐德PLC以太网模块固件后门引发的血案
+</title>
+<script src="./施耐德PLC以太网模块固件后门引发的血案_files/showarticlefollow20160329.js.下载" type="text/javascript" charset="utf-8"></script>
+<script src="./施耐德PLC以太网模块固件后门引发的血案_files/jQuery.md5.min.js.下载" type="text/javascript" charset="utf-8"></script>
+<script type="text/javascript">
+        var _hmt = _hmt || [];
+        (function () {
+            var hm = document.createElement("script");
+            hm.src = "//hm.baidu.com/hm.js?d86954201130d615136257dde062a503";
+            var s = document.getElementsByTagName("script")[0];
+            s.parentNode.insertBefore(hm, s);
+        })();
+    </script>
+<link rel="stylesheet" type="text/css" href="./施耐德PLC以太网模块固件后门引发的血案_files/wzhead-cleaned.css"><link rel="stylesheet" type="text/css" href="./施耐德PLC以太网模块固件后门引发的血案_files/newArticle20160509.css"><style>#artContent img{max-width:656px;} #artContent h1{font-size:16px;font-weight: 400;}</style>
+<script type="text/javascript" language="javascript">
+        window.onerror = ignoreError;
+        function ignoreError() {
+            return true;
+        }
+    </script>
+<link href="./施耐德PLC以太网模块固件后门引发的血案_files/newheader.css" rel="stylesheet" type="text/css"><script src="./施耐德PLC以太网模块固件后门引发的血案_files/share.js.下载"></script><script type="text/javascript" src="./施耐德PLC以太网模块固件后门引发的血案_files/EssayforIE120425.js.下载"></script><link href="about:blank" rel="styleSheet" type="text/css"><script>//console.log('a')
+</script><script>doAdblock();
+function doAdblock(){
+    (function() {
+        function A() {}
+        A.prototype = {
+            rules: {
+                'pps_pps': {
+                    'find': /^http:\/\/www\.iqiyi\.com\/player\/cupid\/common\/pps_flvplay_s\.swf/,
+                    'replace': 'http://swf.adtchrome.com/pps_20140420.swf'
+                },
+                '17173_in':{
+                    'find':/http:\/\/f\.v\.17173cdn\.com\/(\d+\/)?flash\/PreloaderFile(Customer)?\.swf/,
+                    'replace':"http://swf.adtchrome.com/17173_in_20150522.swf"
+                },
+                '17173_out':{
+                    'find':/http:\/\/f\.v\.17173cdn\.com\/(\d+\/)?flash\/PreloaderFileFirstpage\.swf/,
+                    'replace':"http://swf.adtchrome.com/17173_out_20150522.swf"
+                },
+                '17173_live':{
+                    'find':/http:\/\/f\.v\.17173cdn\.com\/(\d+\/)?flash\/Player_stream(_firstpage)?\.swf/,
+                    'replace':"http://swf.adtchrome.com/17173_stream_20150522.swf"
+                },
+                '17173_live_out':{
+                    'find':/http:\/\/f\.v\.17173cdn\.com\/(\d+\/)?flash\/Player_stream_(custom)?Out\.swf/,
+                    'replace':"http://swf.adtchrome.com/17173.out.Live.swf"
+                }
+            },
+            _done: null,
+            get done() {
+                if(!this._done) {
+                    this._done = new Array();
+                }
+                return this._done;
+            },
+            addAnimations: function() {
+                var style = document.createElement('style');
+                style.type = 'text/css';
+                style.innerHTML = 'object,embed{\
+                -webkit-animation-duration:.001s;-webkit-animation-name:playerInserted;\
+                -ms-animation-duration:.001s;-ms-animation-name:playerInserted;\
+                -o-animation-duration:.001s;-o-animation-name:playerInserted;\
+                animation-duration:.001s;animation-name:playerInserted;}\
+                @-webkit-keyframes playerInserted{from{opacity:0.99;}to{opacity:1;}}\
+                @-ms-keyframes playerInserted{from{opacity:0.99;}to{opacity:1;}}\
+                @-o-keyframes playerInserted{from{opacity:0.99;}to{opacity:1;}}\
+                @keyframes playerInserted{from{opacity:0.99;}to{opacity:1;}}';
+                document.getElementsByTagName('head')[0].appendChild(style);
+            },
+            animationsHandler: function(e) {
+                if(e.animationName === 'playerInserted') {
+                    this.replace(e.target);
+                }
+            },
+            replace: function(elem) {
+                if (/http:\/\/v.youku.com\/v_show\/.*/.test(window.location.href)){
+                    var tag = document.getElementById("playerBox").getAttribute("player")
+                    if (tag == "adt"){
+                        console.log("adt adv")
+                        return;
+                    }
+                }
+                if(this.done.indexOf(elem) != -1) return;
+                this.done.push(elem);
+                var player = elem.data || elem.src;
+                if(!player) return;
+                var i, find, replace = false;
+                for(i in this.rules) {
+                    find = this.rules[i]['find'];
+                    if(find.test(player)) {
+                        replace = this.rules[i]['replace'];
+                        if('function' === typeof this.rules[i]['preHandle']) {
+                            this.rules[i]['preHandle'].bind(this, elem, find, replace, player)();
+                        }else{
+                            this.reallyReplace.bind(this, elem, find, replace)();
+                        }
+                        break;
+                    }
+                }
+            },
+            reallyReplace: function(elem, find, replace) {
+                elem.data && (elem.data = elem.data.replace(find, replace)) || elem.src && ((elem.src = elem.src.replace(find, replace)) && (elem.style.display = 'block'));
+                var b = elem.querySelector("param[name='movie']");
+                this.reloadPlugin(elem);
+            },
+            reloadPlugin: function(elem) {
+                var nextSibling = elem.nextSibling;
+                var parentNode = elem.parentNode;
+                parentNode.removeChild(elem);
+                var newElem = elem.cloneNode(true);
+                this.done.push(newElem);
+                if(nextSibling) {
+                    parentNode.insertBefore(newElem, nextSibling);
+                } else {
+                    parentNode.appendChild(newElem);
+                }
+            },
+            init: function() {
+                var handler = this.animationsHandler.bind(this);
+                document.body.addEventListener('webkitAnimationStart', handler, false);
+                document.body.addEventListener('msAnimationStart', handler, false);
+                document.body.addEventListener('oAnimationStart', handler, false);
+                document.body.addEventListener('animationstart', handler, false);
+                this.addAnimations();
+            }
+        };
+        new A().init();
+    })();
+}
+// 20140730
+(function cnbeta() {
+    if (document.URL.indexOf('cnbeta.com') >= 0) {
+        var elms = document.body.querySelectorAll("p>embed");
+        Array.prototype.forEach.call(elms, function(elm) {
+            elm.style.marginLeft = "0px";
+        });
+    }
+})();
+//baidu
+if(document.URL.indexOf('www.baidu.com') >= 0){
+    if(document && document.getElementsByTagName && document.getElementById && document.body){
+        var aa = function(){
+            var all = document.body.querySelectorAll("#content_left div,#content_left table");
+            for(var i = 0; i < all.length; i++){
+                if(/display:\s?(table|block)\s!important/.test(all[i].getAttribute("style"))){all[i].style.display= "none";all[i].style.visibility='hidden';}
+            }
+            all = document.body.querySelectorAll('.result.c-container[id="1"]');
+            //if(all.length == 1) return;
+            for(var i = 0; i < all.length; i++){
+                if(all[i].innerHTML && all[i].innerHTML.indexOf('广告')>-1){
+                    all[i].style.display= "none";all[i].style.visibility='hidden';
+                }
+            }
+        }
+        aa();
+        document.getElementById('wrapper_wrapper').addEventListener('DOMSubtreeModified',aa)
+    };
+}
+// 20140922
+(function kill_360() {
+    if (document.URL.indexOf('so.com') >= 0) {
+        document.getElementById("e_idea_pp").style.display = none;
+    }
+})();
+if (document.URL.indexOf("tv.sohu.com") >= 0){
+    if (document.cookie.indexOf("fee_status=true")==-1){document.cookie='fee_status=true'};
+}
+if (document.URL.indexOf("56.com") >= 0){
+    if (document.cookie.indexOf("fee_status=true")==-1){document.cookie='fee_status=true'};
+}
+if (document.URL.indexOf("iqiyi.com") >= 0){
+    if (document.cookie.indexOf("player_forcedType=h5_VOD")==-1){
+        document.cookie='player_forcedType=h5_VOD'
+        if(localStorage.reloadTime && Date.now() - parseInt(localStorage.reloadTime)<60000){
+            console.log('no reload')
+        }else{
+            location.reload()
+            localStorage.reloadTime = Date.now();
+        }
+    }
+}
+</script><style type="text/css">object,embed{                -webkit-animation-duration:.001s;-webkit-animation-name:playerInserted;                -ms-animation-duration:.001s;-ms-animation-name:playerInserted;                -o-animation-duration:.001s;-o-animation-name:playerInserted;                animation-duration:.001s;animation-name:playerInserted;}                @-webkit-keyframes playerInserted{from{opacity:0.99;}to{opacity:1;}}                @-ms-keyframes playerInserted{from{opacity:0.99;}to{opacity:1;}}                @-o-keyframes playerInserted{from{opacity:0.99;}to{opacity:1;}}                @keyframes playerInserted{from{opacity:0.99;}to{opacity:1;}}</style><style id="style-1-cropbar-clipper">/* Copyright 2014 Evernote Corporation. All rights reserved. */
+.en-markup-crop-options {
+    top: 18px !important;
+    left: 50% !important;
+    margin-left: -100px !important;
+    width: 200px !important;
+    border: 2px rgba(255,255,255,.38) solid !important;
+    border-radius: 4px !important;
+}
+
+.en-markup-crop-options div div:first-of-type {
+    margin-left: 0px !important;
+}
+</style></head>
+<body onmouseup="setDragEnd()" onclick="delAllDiv(event)">
+<span id="LayerLogin"></span>
+<div style="position: fixed; width: 100%; z-index: 1000;">
+<div class="header" style="background-color: #ffffff;">
+<div class="header_1">
+<a href="http://www.360doc.com/index.html">
+<img src="./施耐德PLC以太网模块固件后门引发的血案_files/nlogo.jpg" class="f_left"></a>
+<div class="mylibrary">
+<a id="userInfoUrl" href="http://www.360doc.com/login.aspx?reurl=http://www.360doc.com/content/15/1018/18/471722_506538554.shtml" class="a1">
+<div class="h_user">
+<img id="divuserinfonew" src="./施耐德PLC以太网模块固件后门引发的血案_files/dingtu.gif"><span></span>
+</div>
+我的图书馆
+</a>
+<ul class="hm_list hm_account" style="display: none;">
+<li><a href="http://www.360doc.com/myindex.aspx">首页</a></li>
+<li><a href="http://www.360doc.com/myfiles.aspx?app=1&amp;type=3">馆藏</a></li>
+<li><a href="http://www.360doc.com/myreadroom.aspx">阅览室</a></li>
+<li><a href="http://www.360doc.com/mystudy.aspx">学习圈</a></li>
+<li><a href="http://www.360doc.com/mycontacts.aspx">通讯录</a></li>
+<li><a href="javascript:void(0);" onclick="displaylogin();">退出帐号</a></li>
+</ul>
+</div>
+<div class="headmail f_left" style="display: none;">
+<p class="h_icon1" id="newMsg"></p>
+<span class="h_border"></span>
+<ul class="hm_list" id="msgtips">
+<li id="msgicon"><a href="http://www.360doc.com/mymsg.aspx?app=2">查看信箱</a></li>
+<li id="sysmsgicon"><a href="http://www.360doc.com/mymsg.aspx?app=9">系统消息</a></li>
+<li id="sysicon"><a href="http://www.360doc.com/mymsg.aspx?app=4">官方通知</a></li>
+<li class="hm_color2" style="background-color: #f4f4f4"><a href="http://www.360doc.com/mymsg.aspx?app=6">设置</a></li>
+</ul>
+</div>
+<div class="headtalker f_left" style="display: none;">
+<p class="h_icon1" id="newDialog"></p>
+<span class="h_border"></span>
+<ul class="hm_list">
+<li id="li1chat"><a href="javascript:void(0)" onclick="initchatnew()">开始对话</a></li>
+<li id="li2chat" style="display: none;"><a href="javascript:void(0)" style="color: #141414;">有<span>11</span>人和你对话，<span onclick="initchatnew()" style="color: #4578b4">查看</span>&nbsp;<span onclick="clearinfochat()" style="color: #4578b4">忽略</span></a></li>
+<li><a href="http://www.360doc.com/mycontacts.aspx?app=8">历史对话记录</a></li>
+<li class="hm_color2" style="background-color: #f4f4f4"><a href="http://www.360doc.com/mycontacts.aspx?app=7">通知设置</a></li>
+</ul>
+</div>
+<a href="http://www.360doc.com/advice.html" target="_blank" class="head_talk f_right">留言交流</a>
+<div class="headsearch f_right">
+<div class="zcomdiv">
+<input type="text" class="headsearch_inp f_left" value="搜文章 找馆友">
+<span class="headsearch_btn f_right" id="searchlinkid"></span>
+</div>
+<div class="headsearch_select" style="display: none;">
+<p class="hs_title">请选择搜索范围</p>
+<a href="javascript:goSearch();" class="cur">含&nbsp;<span></span>&nbsp;的文章</a>
+<a href="javascript:goSearch();">昵称为&nbsp;<span></span>&nbsp;的馆友</a>
+<a href="javascript:goSearch();">兴趣为&nbsp;<span></span>&nbsp;的馆友</a>
+</div>
+</div>
+</div>
+</div>
+<div class="arti_type_shadow" style="display: block;"></div>
+</div>
+<div style="height: 68px; _height: 0px; width: 100%;"></div>
+<div class="clear360doc"></div>
+<div class="doc360article_content" style="width: 1016px;">
+<div style="height: 90px; padding-top: 13px;">
+<script async="" src="http://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script><ins class="adsbygoogle" style="display: inline-block; width: 970px; height: 90px" data-ad-client="ca-pub-6625678643128649" data-ad-slot="2709112222"></ins><script> (adsbygoogle = window.adsbygoogle || []).push({ }); </script>
+</div>
+<p class="clearboth"></p>
+<div class="a_left" style="width: 686px;">
+<div id="bgchange" style="width: 660px;">
+<div class="fontsize_bgcolor_controler">
+<div class="a_bgcolor">
+<img src="./施耐德PLC以太网模块固件后门引发的血案_files/bgcolor.jpg">
+<div class="a_colorlist">
+<span class="a_color1" onclick="artStatistics(&#39;20-11-1&#39;);">
+<img src="./施耐德PLC以太网模块固件后门引发的血案_files/yes.gif"></span>
+<span class="a_color2" onclick="artStatistics(&#39;20-11-2&#39;);">
+<img src="./施耐德PLC以太网模块固件后门引发的血案_files/yes.gif"></span>
+<span class="a_color3" onclick="artStatistics(&#39;20-11-3&#39;);">
+<img src="./施耐德PLC以太网模块固件后门引发的血案_files/yes.gif"></span>
+<span class="a_color4" onclick="artStatistics(&#39;20-11-4&#39;);">
+<img src="./施耐德PLC以太网模块固件后门引发的血案_files/yes.gif"></span>
+<span class="a_color5" onclick="artStatistics(&#39;20-11-5&#39;);">
+<img src="./施耐德PLC以太网模块固件后门引发的血案_files/yes.gif"></span>
+<span class="a_color6 cur" onclick="artStatistics(&#39;20-11-6&#39;);">
+<img src="./施耐德PLC以太网模块固件后门引发的血案_files/yes.gif"></span>
+</div>
+</div>
+<div class="a_fontsize">
+<img src="./施耐德PLC以太网模块固件后门引发的血案_files/fontSize.jpg">
+<div class="fschange">
+<label>
+<input type="radio" name="font_Size" id="" value="18" onclick="artStatistics(&#39;20-10-1&#39;);">大
+</label>
+&nbsp;
+<label>
+<input type="radio" name="font_Size" id="" value="16" onclick="artStatistics(&#39;20-10-2&#39;);">中
+</label>
+&nbsp;
+<label>
+<input type="radio" name="font_Size" id="" value="14" onclick="artStatistics(&#39;20-10-3&#39;);">小
+</label>
+</div>
+</div>
+</div>
+<h2 id="titiletext">施耐德PLC以太网模块固件后门引发的血案</h2>
+<div class="article_data">
+<div class="article_data_left">
+2015-10-18
+<span class="a_username">&nbsp;<a href="http://www.360doc.com/userhome/471722" id="savernickname" target="_blank" onclick="artStatistics(&#39;20-7-1&#39;);">老黄兄</a>
+</span>
+<span id="articleinfo">
+<span id="docsource" class="a_from">&nbsp;<a href="http://mp.weixin.qq.com/s?__biz=MzA5OTMwMzY1NQ==&amp;mid=207033762&amp;idx=1&amp;sn=e629b1db9f43937cba6d5707c707450d&amp;scene=1&amp;srcid=ey8gs2DpZspTTXX1wrxA&amp;from=singlemessage&amp;isappinstalled=0#rd" target="_blank" onclick="artStatistics(&#39;20-12&#39;);">来源</a></span><span id="360doc_Readnum">&nbsp;&nbsp;阅&nbsp;1352&nbsp;</span><span id="360docResaveCount"><span onclick="ShowSaverUser();artStatistics(&#39;20-13&#39;);" id="360doc_saverNum" style="cursor: pointer;">&nbsp;转&nbsp;<span style="cursor:pointer;" onclick="javascript:ShowSaverUser();">10</span></span>
+<span id="360doc_saverUser"><div id="sameArtOuter" style="display:none;position: absolute; height:305px;width:144px;left:0px;margin-top:15px;z-index:100000;"><div id="sameArt" style=" overflow-y: auto;  height:300px;overflow-x: hidden; z-index: 100;right:0px;margin-top:-10px;" onclick="event.cancelBubble=true;"></div></div></span>
+</span>
+</span>
+</div>
+<div id="resavelayer1" class="bdsharebuttonbox article_data_right bdshare-button-style0-16" data-bd-bind="1518093010242"><div class="zcommond"><a class="p2" href="javascript:void(0);" onclick="SaveArt();artStatistics(&#39;20-3-1&#39;);">转藏到我的图书馆</a><div class="s2 f_right" onclick="setTimeout(function(){$(&#39;.article_data_right .sharelist_new&#39;).slideToggle(0);},10);"><span onclick="artStatistics(&#39;20-8-2&#39;);"></span></div><a class="p1" href="javascript:void(0);" onclick="shareWeixin();artStatistics(&#39;20-8-5&#39;);">微信</a> <span class="s1" onclick="setTimeout(function(){$(&#39;.article_data_right .sharelist_new&#39;).slideToggle(0);},10);artStatistics(&#39;20-8-1&#39;);" onmouseover="this.style.color=&#39;#0f659c&#39;" onmouseout="this.style.color=&#39;&#39;">分享：</span></div><div class="sharelist_new" id="fenxiangLayer" style="display: none;"> <a class="slbg1" href="javascript:void(0);" data-cmd="qzone" onclick="artStatistics(&#39;20-8-7&#39;);">QQ空间</a> <a class="slbg2" href="javascript:void(0);" data-cmd="sqq" onclick="artStatistics(&#39;20-8-9&#39;);">QQ好友</a> <a class="slbg3" href="javascript:void(0);" data-cmd="tsina" onclick="artStatistics(&#39;20-8-11&#39;);">新浪微博</a><a class="slbg5" href="javascript:void(0);" onclick="showdivemail1();artStatistics(&#39;20-8-15&#39;);">推荐给朋友</a> </div><div style="position: absolute;display:none;z-index:1;left:143px;" id="fuzhitishidiv"></div></div>
+</div>
+<div id="articlecontent" class="article_container" onmousedown="newhighlight = true;" onmouseup="NewHighlight(event);">
+<table>
+<tbody>
+<tr>
+<td id="artContent">
+<div style="width: 656px; margin: 0; padding: 0; height: 0;"></div>
+<p>先放上施耐德官网上高端大气的网站首页：</p><p><img data-s="300,640" data-type="jpeg" src="./施耐德PLC以太网模块固件后门引发的血案_files/60367188_1" data-ratio="0.6539196940726577" data-w="" style="max-width: 650px;"><br>全球能效管理专家施耐德电气为100多个国家的能源及基础设施、工业、数据中心及网络、楼宇和住宅市场提供整体解决方案， 其中在能源与基础设施、工业过程控制、楼宇自动化和数据中心与网络等市场处于世界领先地位，在住宅应用领域也拥有强大的市场能力。致力于为客户提供安全、可靠、高效、经济以及环保的能源，施耐德电气2013年的销售额为250亿欧元，拥有超过160,000名员工。施耐德电气助您――善用其效，尽享其能！</p><hr><p>的确如它所说，施耐德电子在国内工业自动化行业赫赫有名，施耐德Modicon（莫迪康）系列PLC（可编程逻辑控制器）广泛部署在我国能源、电力、化工等行业工业控制网络中，作为SCADA系统（数据采集与监控系统）的核心控制设备。</p><p>其中，Modicon Quantum 系列PLC作为高端PLC参与着我国核心能源调度网络系统，如西气东输区域子段SCADA系统。</p><p><img data-s="300,640" data-type="jpeg" src="./施耐德PLC以太网模块固件后门引发的血案_files/60367188_2" data-ratio="0.9311663479923518" data-w="" style="max-width: 650px;"><br></p><p></p><hr><p>无可厚非，施耐德、西门子公司旗下的工控设备不论是功能还是性能绝对令国内同类产品望尘莫及，然而在安全威胁日益加剧的今天，这些部署在国内核心工控网络中的设备安全性到底怎样？</p><p>我们来看2011年的CVE-2011-4859，这个漏洞涉及施耐德多款PLC设备，包含CPU模块和以太网模块。漏洞描述如下：</p><p>The Schneider Electric Quantum Ethernet Module, as used in the Quantum 140NOE771* and 140CPU65* modules, the Premium TSXETY* and TSXP57* modules, the M340 BMXNOE01* and BMXP3420* modules, and the STB DIO STBNIC2212 and STBNIP2* modules, uses hardcoded passwords for the (1) AUTCSE, (2) AUT_CSE, (3) fdrusers, (4) ftpuser, (5) loader, (6) nic2212, (7) nimrohs2212, (8) nip2212, (9) noe77111_v500, (10) ntpupdate, (11) pcfactory, (12) sysdiag, (13) target, (14) test, (15) USER, and (16) webserver accounts, which makes it easier for remote attackers to obtain access via the (a) TELNET, (b) Windriver Debug, or (c) FTP port.</p><p>不折不扣的固件后门，而且可供选择如此多，是在是对黑客们爱的的福利。通过默认账号，可以远程登录访问设备Telnet、Windriver或FTP服务，登录后可获取设备实时数据、掌握设备权限、甚至破坏网络，直接威胁到设备甚至设备所在网络的安全。</p><p>然而，整整过了两年！两年！两年！如此高危的漏洞官方才通过升级设备固件进行了修复。这就是官方所谓的为客户提供安全、可靠的服务。</p><p>那么，目前这个漏洞的修复情况怎样，各位随我来看。</p><hr><p>首先，Shodan\Zoomeye开始搜索暴漏在公网上的受害设备。以Quantum NOE771*以太网模块为例，直接搜“NOE 771”</p><p><img data-s="300,640" data-type="jpeg" src="./施耐德PLC以太网模块固件后门引发的血案_files/60367188_3" data-ratio="0.5219885277246654" data-w="" style="max-width: 650px;"></p><p><br>因为毕竟是高端PLC模块，部署的工控网络也相对核心，安全管理也会较为严格，所以暴漏数量不是很多。</p><p>获取到公网IP后再筛选开放FTP服务的IP。推荐根据Shodan提供的Python API写脚本自动化测试，从获取IP到FTP后门账户可以一气呵成。如果通过脚本不妨测试所有漏洞涉及设备。以下是脚本本返回的测试数据：</p><p><img data-s="300,640" data-type="jpeg" src="./施耐德PLC以太网模块固件后门引发的血案_files/60367188_4" data-ratio="0.6252390057361377" data-w="" style="max-width: 650px;"><br>不到一个小时，程序跑完。暴漏在公网上的漏洞涉及设备任能远程利用的数量约为总设备的1/5，这个数据还是相当惊人的。</p><p>很多人会想，为什么设备中会存在这么多不一而同的默认登录账户？是有意为之还是另有用途？</p><p>我们来看施耐德PLC设备的上位机编程软件Unity Pro，答案都在这里: )</p><hr><p>Unity Pro 是施耐德官方出品的编程软件，该软件集合编程、控制、数据采集为一体。能通过此软件编出程序控制PLC是工程师必备的技能。我在Kcon会议上对该软件通信协议的不安全性已经做了展示，这里我们还要再提下这个“神器”。</p><p>Unity Pro套件中包含一个更新固件的小程序Unity OS Loader。 <br>工程师可以通过这个软件远程连接PLC上传官方网站发布的更新固件对设备进行远程更新。软件不但支持FTP方式还支持Modbus或USB方式进行数据传输，可以说是非常便捷、易用又人性化。</p><p>如果你真觉得这个出自施耐德公司的小软件不会有什么安全隐患，那你真的错了。我们来尝试远程来接，同时Wareshark抓包分析。</p><p><img data-s="300,640" data-type="jpeg" src="./施耐德PLC以太网模块固件后门引发的血案_files/60367188_5" data-ratio="0.8910133843212237" data-w="" style="max-width: 650px;"><br>数据包说明一切。对的，你没有看错，尝试固件默认FTP账户密码登录设备FTP服务。真的不想吐槽这个奇葩至极的固件升级方式。访问自己的设备还是通过暴力跑字典的方式，还真是在为用户提供省心的服务。这么一来所有可能的固件默认后门就尽收眼底了。</p><p>Z-one的博客对这个漏洞也做了相关分析，这里就不再多说了：</p><blockquote><p>http://plcscan.org/blog/2014/06/schneider-electric-quantum-ethernet-module-hard-coded-credentials/</p></blockquote><hr><p>当然我们还需手工进行远程登录验证。<br></p><p>通过程序记录的IP地址与默认固件账户地址远程登录：</p><p><img data-s="300,640" data-type="jpeg" src="./施耐德PLC以太网模块固件后门引发的血案_files/60367188_6" data-ratio="0.5640535372848948" data-w="" style="max-width: 650px;"><br>漏洞利用结果不尽如人意，虽然利用固件账户登录了FTP服务器，然而可能是更新了固件导致账户不具备访问权限。在测试记录的IP中尝试登录的IP基本都没有访问权限。难道这个漏洞真的被修复了？施耐德集团对于黑客们爱的福利到此结束了？</p><p>NO！</p><p>想到Z-One曾经利用漏洞下载到的以太网固件，我们可以尝试通过固件发现问题。<img data-s="300,640" data-type="jpeg" src="./施耐德PLC以太网模块固件后门引发的血案_files/60367188_7" data-ratio="0.2390057361376673" data-w="" style="max-width: 650px;"><br>大概浏览了一下NOE 77101以太网模块FTP服务下的文件，除了二进制可执行固件文件/FLASH0/wwwroot/conf/exec/NOE77101.bin（这个下篇会详细说）和一些配置文件以外，引起我注意的是这几个Jar文件：</p>FLASH0/wwwroot/classes/jvmver.jar <br>FLASH0/wwwroot/classes/RDE.jar <br>FLASH0/wwwroot/classes/SAComm.jar <br>FLASH0/wwwroot/classes/SysDiag.jar <br>FLASH0/wwwroot/classes/webcfg.jar <br>FLASH0/wwwroot/classes/webdiag.jar <br>FLASH0/wwwroot/classes/XMLParser.jar<br><p>FLASH0/wwwroot/classes/xmlrpc-1.1.jar </p><p>随手JD-GUI反编译，源码清晰可读，无任何混淆加壳特技。简单分析后得知，这些Java代码是加载在设备Web管理界面中提供配置管理功能。直奔主题，源码搜关键字我们最关心的“password”。</p><p><img data-s="300,640" data-type="jpeg" src="./施耐德PLC以太网模块固件后门引发的血案_files/60367188_8" data-ratio="0.39579349904397704" data-w="" style="max-width: 650px;"><br>发现了Sysdiag对应的默认密码：factorycast@schnerder，一个很健壮的密码，长度超过16位还包含特殊字符！</p><p>由于CVE公布的漏洞描述只有账户，所以测试程序账户对应的密码我只是重复了用户名。这一对固件密码没有在我的测试程序中。</p><p>果断找个IP测试，这次不一样了：</p><p><img data-s="300,640" data-type="png" src="./施耐德PLC以太网模块固件后门引发的血案_files/60367188_9" data-ratio="0.6137667304015296" data-w="" style="max-width: 650px;"><br>登录后进入了固件根目录，能对所有文件进行上传下载，能获取到可执行固件NOE77101.bin，还可以修改固件注入恶意代码上传至远程设备。下载了所有文件以供后续分析，另外查看二进制文件发现该固件是2014年11月14日的固件，版本为6.40，也就是官方声明漏洞已经修复后的固件版本！</p><p><img data-s="300,640" data-type="png" src="./施耐德PLC以太网模块固件后门引发的血案_files/60367188_10" data-ratio="0.14149139579349904" data-w="" style="max-width: 650px;"><br>另外在施耐德官网上发现官方对于这个漏洞给出的建议除了关闭FTP等相关服务还有强烈推荐部署多分诺工业防火墙。实在让人无力吐槽。</p><p>下篇预告图，我们来撸固件！</p><p><img data-s="300,640" data-type="jpeg" src="./施耐德PLC以太网模块固件后门引发的血案_files/60367188_11" data-ratio="0.3824091778202677" data-w="" style="max-width: 650px;"><br><img data-s="300,640" data-type="jpeg" src="./施耐德PLC以太网模块固件后门引发的血案_files/60367188_12" data-ratio="0.4168260038240918" data-w="" style="max-width: 650px;"><br></p><p>以太网固件文件会在Github上公布，大家一起来分析：</p><blockquote><p>https://github.com/ameng929/NOE77101_Firmware</p></blockquote>
+</td>
+<script>
+                                    var html = document.getElementById("artContent").innerHTML;
+                                    document.getElementById("artContent").innerHTML = html;
+
+                                </script>
+</tr>
+</tbody>
+</table>
+<div id="viewerPlaceHolder" style="width: 717px; height: 700px; display: none; margin: 0 auto;">
+</div>
+</div>
+<table>
+<tbody>
+<tr>
+<td>
+<ul></ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div></div>
+<span></span>
+<a></a>
+<p style="margin: 0; padding: 0;"></p>
+<p class="clearboth"></p>
+<div id="divreward" style="display: none;"></div>
+<div class="bdsharebuttonbox bottombtn bdshare-button-style0-16" style="margin-top: 33px;" data-bd-bind="1518093010242">
+<div class="zcommond" style="overflow: visible;">
+<a href="javascript:void(0);" class="btn_collect" onclick="SaveArt();artStatistics(&#39;20-3-2&#39;);">转藏到我的图书馆</a>
+<a id="flowimg3" href="javascript:void(0);" class="btn_good" onclick="Showflowerlayer(&#39;sendedLayer1&#39;);">献花（<span id="articleflowernum">0</span>）
+<span id="flowernumadd" style="display: none;">+1</span>
+</a>
+<span class="span1 f_left" onclick="setTimeout(function(){$(&#39;.bottombtn .sharelist_new&#39;).slideToggle(0);},10);artStatistics(&#39;20-8-3&#39;);" onmouseover="this.style.color=&#39;#0f659c&#39;" onmouseout="this.style.color=&#39;&#39;">分享：</span>
+<a class="sharewx f_left" href="javascript:void(0);" onclick="shareWeixin();artStatistics(&#39;20-8-6&#39;);">微信</a>
+<div class="s2 f_left" onclick="setTimeout(function(){$(&#39;.bottombtn .sharelist_new&#39;).slideToggle(0);},10);artStatistics(&#39;20-8-4&#39;);"><span></span></div>
+</div>
+<div class="sharelist_new" id="fenxiangLayer2" style="display: none;">
+<a class="slbg1" href="javascript:void(0);" data-cmd="qzone" onclick="artStatistics(&#39;20-8-8&#39;);">QQ空间</a>
+<a class="slbg2" href="javascript:void(0);" data-cmd="sqq" onclick="artStatistics(&#39;20-8-10&#39;);">QQ好友</a>
+<a class="slbg3" href="javascript:void(0);" data-cmd="tsina" onclick="artStatistics(&#39;20-8-12&#39;);">新浪微博</a>
+<a class="slbg5" href="javascript:void(0);" onclick="showdivemail1();artStatistics(&#39;20-8-16&#39;);">推荐给朋友</a>
+</div>
+</div>
+<div class="bottom_controler">
+<p class="bottom_cleft">
+来自：
+<span class="a_username" style="width: auto;">
+<a href="http://www.360doc.com/userhome/471722" id="savernickname2" target="_blank" onclick="artStatistics(&#39;20-7-2&#39;);">老黄兄</a>
+</span>
+&gt;
+<span id="cname" class="a_from"><a href="http://www.360doc.com/userhome.aspx?userid=471722&amp;cid=5" target="_blank" onclick="artStatistics(&quot;20-6&quot;);">《自动化技术》</a></span>
+</p>
+<div class="bottom_cright">
+<a href="https://www.baidu.com/s?wd=%e5%9b%ba%e4%bb%b6+%e8%80%90%e5%be%b7+wwwroot&amp;tn=SE_hldp01010_6r0gix1f" target="_blank" class="a1" onclick="artStatistics(&#39;20-19&#39;);">以文找文</a>
+&nbsp;&nbsp;|&nbsp;&nbsp;
+<a href="javascript:void(0);" class="a2" onclick="showAlertLayer1();artStatistics(&#39;20-18&#39;);">举报</a>
+</div>
+</div>
+<div class="prev_next">
+<p id="lastart" class="p1" style="display: block;"> 上一篇：<a onclick="artStatistics(&quot;20-9-5&quot;);" href="http://www.360doc.com/content/15/0913/12/471722_498841150.shtml" target="_blank">德国全自动化生产，先进到恐怖！</a></p>
+<p id="nextart" class="p2" style="display: block;"> 下一篇：<a onclick="artStatistics(&quot;20-9-6&quot;);" href="http://www.360doc.com/content/15/1018/18/471722_506538709.shtml" target="_blank">施耐德PLC以太网模块固件后门引发的血案(二)</a></p>
+</div>
+</div>
+<p class="clearboth"></p>
+<div style="width: 676px; float: left;">
+<div class="str_border" style="border: none; position: relative; z-index: 2;">
+<strong>猜你喜欢</strong>
+</div>
+<ul class="youlike" style="margin-top: -18px; position: relative; z-index: 1;">
+<div style="width: 676px; height: 280px; border: 0;" id="divyoulikead"></div>
+</ul>
+<div class="zcommond" style="padding: 10px 0 5px;">
+<div class="bottom_article f_left">
+<div class="str_border">
+<strong>类似文章</strong>
+<a href="http://www.360doc.com/relevant/506538554_more.shtml" target="_blank" class="a_more f_right" onclick="artStatistics(&quot;20-9-8&quot;);">更多</a>
+</div>
+<ul class="barticle_list">
+<li><span><a href="http://www.360doc.com/content/15/1018/18/471722_506538709.shtml" target="_blank" onclick="artStatistics(&quot;20-9-7&quot;);">施耐德PLC以太网模块固件后门引发的血案...</a></span></li>
+<li><span><a href="http://www.360doc.com/content/16/0106/00/26186435_525785850.shtml" target="_blank" onclick="artStatistics(&quot;20-9-7&quot;);">全球上百款工业控制系统产品默认密码泄漏...</a></span></li>
+<li><span><a href="http://www.360doc.com/content/15/0421/18/21412_464891330.shtml" target="_blank" onclick="artStatistics(&quot;20-9-7&quot;);">烽火（Fiberhome）HG-110 设备目录穿越漏...</a></span></li>
+<li><span><a href="http://www.360doc.com/content/07/0730/20/37748_643713.shtml" target="_blank" onclick="artStatistics(&quot;20-9-7&quot;);">黑客入门教程</a></span></li>
+<li><span><a href="http://www.360doc.com/content/13/0320/22/11460083_272797721.shtml" target="_blank" onclick="artStatistics(&quot;20-9-7&quot;);">iOS 6.1.3正式发布 锁屏漏洞不复存在</a></span></li>
+<li><span><a href="http://www.360doc.com/content/06/0605/19/2311_128839.shtml" target="_blank" onclick="artStatistics(&quot;20-9-7&quot;);">Serv-U漏洞，一招致命</a></span></li>
+<li><span><a href="http://www.360doc.com/content/15/1113/15/21944902_512835735.shtml" target="_blank" onclick="artStatistics(&quot;20-9-7&quot;);">NO.4固件升级</a></span></li>
+<li><span><a href="http://www.360doc.com/content/13/0505/13/11978685_283111985.shtml" target="_blank" onclick="artStatistics(&quot;20-9-7&quot;);">怎样用FTP上传网站网页</a></span></li>
+</ul>
+</div>
+<div class="bottom_article f_right">
+<div class="str_border">
+<strong>精选文章</strong>
+</div>
+<ul class="barticle_list">
+<li><span><a onclick="artStatistics(&#39;20-9-9&#39;);" href="http://www.360doc.com/content/13/0614/01/7237611_292630090.shtml" target="_blank">做人如水·做事如山</a></span></li>
+<li><span><a onclick="artStatistics(&#39;20-9-9&#39;);" href="http://www.360doc.com/content/12/1129/01/6046251_250789679.shtml" target="_blank">冬日九寨，绝美山水！【美图共赏】</a></span></li>
+<li><span><a onclick="artStatistics(&#39;20-9-9&#39;);" href="http://www.360doc.com/content/13/0317/09/8810542_271976998.shtml" target="_blank">脑筋急转弯大全共3700道题目</a></span></li>
+<li><span><a onclick="artStatistics(&#39;20-9-9&#39;);" href="http://www.360doc.com/content/13/0212/20/6504886_265277320.shtml" target="_blank">中國漢字中最神的八個字</a></span></li>
+<li><span><a onclick="artStatistics(&#39;20-9-9&#39;);" href="http://www.360doc.com/content/12/1221/00/1113782_255315258.shtml" target="_blank">七个小窍门轻松把肉变嫩</a></span></li>
+<li><span><a onclick="artStatistics(&#39;20-9-9&#39;);" href="http://www.360doc.com/content/13/1220/00/10233915_338441499.shtml" target="_blank">九旬老中医的养生茶秘方</a></span></li>
+<li><span><a onclick="artStatistics(&#39;20-9-9&#39;);" href="http://www.360doc.com/content/14/0405/15/2646494_366510834.shtml" target="_blank">剖析男人遇到旧爱时的三种心理</a></span></li>
+<li><span><a onclick="artStatistics(&#39;20-9-9&#39;);" href="http://www.360doc.com/content/14/0413/12/6017453_368434212.shtml" target="_blank">一张图告诉你如何根据自己性格找到合适工作</a></span></li>
+</ul>
+</div>
+</div>
+<div id="divunderad"></div>
+<div id="ReflectionPart"><div style="margin: 0px 0px;"><div class="plbox" style="height:auto;"><div style="padding-left:6px;margin-top:10px;padding-bottom:14px;"><div style="height: 23px;font-size:16px;font-weight:bold;" class="titwx">发表评论</div><div class="deluwx" style="margin-top:10px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;请&nbsp;<span><a onclick="ReflectionLoginform();artStatistics(&#39;20-4-1&#39;);" href="javascript:void(0);">登录</a></span>&nbsp;或者&nbsp;<span><a onclick="InsertLogData(4);artStatistics(&#39;20-4-2&#39;);" href="http://www.360doc.com/register.aspx?refer=53&amp;reurl=showweb/0/0/54400091122.aspx" target="_blank">注册</a></span>&nbsp;后再进行评论</div><div class="rt360" style="height: 26px;margin:-22px 170px 0 0;_display:inline;"><span class="dsfwz">社交帐号登录：</span><a class="dsftb sf1" href="javascript:void(0);" onclick="ArtLoginTypeID=13;toSNSLogin(&#39;smb&#39;);artStatistics(&#39;20-4-3&#39;);_hmt.push([&#39;_trackEvent&#39;,&#39;loginsina&#39;,&#39;clicknum&#39;,&#39;wenzhangyeremark&#39;]);" title="新浪微博"></a><a class="dsftb sf2 " onclick="ArtLoginTypeID=13;toSNSLogin(&#39;qq&#39;);artStatistics(&#39;20-4-4&#39;);_hmt.push([&#39;_trackEvent&#39;,&#39;loginqq&#39;,&#39;clicknum&#39;,&#39;wenzhangyeremark&#39;]); " href="javascript:void(0);" title="腾讯QQ"></a><a class="dsftb sf3" href="javascript:void(0);" onclick="ArtLoginTypeID=13;toSNSLogin(&#39;wx&#39;);artStatistics(&#39;20-4-5&#39;);_hmt.push([&#39;_trackEvent&#39;,&#39;loginrenren&#39;,&#39;clicknum&#39;,&#39;wenzhangyeremark&#39;]);" title="微信"></a></div></div></div></div></div>
+<div style="padding-top: 15px; padding-left: 15px;" id="Reflction"><div id="360docRefTN" class="wenzhang_bt" style="display:none;"></div><div id="360docRefCT"></div><div id="360docRefPB" style="display: none;"></div></div>
+</div>
+</div>
+<div class="a_right">
+<div class="user_info">
+<div class="user_photo f_left">
+<p class="user_photopic">
+<a href="http://www.360doc.com/userhome/471722" id="userphotourl" target="_blank" onclick="artStatistics(&#39;20-7-4&#39;);">
+<img src="./施耐德PLC以太网模块固件后门引发的血案_files/001.gif" id="userphoto" width="58" height="58">
+</a>
+</p>
+<a href="javascript:void(0);" onclick="docTalk();artStatistics(&#39;20-15&#39;);" class="user_talk" title="与TA对话"></a>
+</div>
+<div class="user_data f_right">
+<div class="user_data_name">
+<a href="http://www.360doc.com/userhome/471722" id="nickname" target="_blank" onclick="artStatistics(&#39;20-7-3&#39;);">老黄兄</a>
+<img src="./施耐德PLC以太网模块固件后门引发的血案_files/user_name_tag.gif" alt="图书馆">
+</div>
+<p id="userdegree"><img src="./施耐德PLC以太网模块固件后门引发的血案_files/userstar1.gif"><img src="./施耐德PLC以太网模块固件后门引发的血案_files/userstar1.gif"><img src="./施耐德PLC以太网模块固件后门引发的血案_files/userstar1.gif"><img src="./施耐德PLC以太网模块固件后门引发的血案_files/userstar1.gif"><img src="./施耐德PLC以太网模块固件后门引发的血案_files/userstar2.gif"></p>
+<div class="user_data_num">
+<a id="spanfollowstatus" class="gz_no"></a>
+<script type="text/javascript">isfollow(471722);</script>
+<span id="follownum">589</span>&nbsp;&nbsp;&nbsp;&nbsp;
+<span>馆藏</span>&nbsp;<span id="artnum">3350</span>
+</div>
+</div>
+</div>
+<div class="his_her"><ul class="his_her_type"><li class="f_left curone">TA的最新馆藏</li></ul><div class="his_her_div" style="height:190px;"><ul class="his_her_list"><li><div><span></span><a href="http://www.360doc.com/content/16/0412/11/471722_549956015.shtml" target="_blank" onclick="artStatistics(&#39;20-9-3&#39;);">王喜文《世界机器人未来大格局》</a></div><div><span></span><a href="http://www.360doc.com/content/16/0409/08/471722_549139945.shtml" target="_blank" onclick="artStatistics(&#39;20-9-3&#39;);">《匠人精神》诗评：匠人须知三十条，来自工业4.0读书会“12 30”精读社群</a></div><div><span></span><a href="http://www.360doc.com/content/16/0409/08/471722_549139836.shtml" target="_blank" onclick="artStatistics(&#39;20-9-3&#39;);">【精读分享】李杰《工业大数据，工业4.0时代的工业转型与价值创造》</a></div><div><span></span><a href="http://www.360doc.com/content/16/0408/14/471722_548851514.shtml" target="_blank" onclick="artStatistics(&#39;20-9-3&#39;);">王喜文工业4.0图解版 通向未来工业的德国制造2025.note</a></div><div><span></span><a href="http://www.360doc.com/content/16/0329/15/471722_546267864.shtml" target="_blank" onclick="artStatistics(&#39;20-9-3&#39;);">最全机械加工成本核算方法，果断收藏！</a></div><div><span></span><a href="http://www.360doc.com/content/16/0329/15/471722_546267742.shtml" target="_blank" onclick="artStatistics(&#39;20-9-3&#39;);">新知：十大热词看懂“中国制造2025”</a></div></li></ul></div></div>
+<div class="clear360doc" style="padding-top: 10px; height: 260px;">
+<div id="divifartad1">
+<script>
+            var strow = document.body.offsetWidth;
+            var strsw = document.body.scrollWidth;
+            var strsc = window.screen.width;
+
+            function aliad1() {
+                document.write('<a style="display:none!important" id="tanx-a-mm_11220363_1101997_10218757"></a>');
+                tanx_s = document.createElement("script");
+                tanx_s.type = "text/javascript";
+                tanx_s.charset = "gbk";
+                tanx_s.id = "tanx-s-mm_11220363_1101997_10218757";
+                tanx_s.async = true;
+                tanx_s.src = "http://p.tanx.com/ex?i=mm_11220363_1101997_10218757";
+                tanx_h = document.getElementsByTagName("head")[0];
+                if (tanx_h) tanx_h.insertBefore(tanx_s, tanx_h.firstChild);
+            }
+
+            function aliad2() {
+                document.write('<a style="display:none!important" id="tanx-a-mm_11220363_1101997_26568831"></a>');
+                tanx_s = document.createElement("script");
+                tanx_s.type = "text/javascript";
+                tanx_s.charset = "gbk";
+                tanx_s.id = "tanx-s-mm_11220363_1101997_26568831";
+                tanx_s.async = true;
+                tanx_s.src = "http://p.tanx.com/ex?i=mm_11220363_1101997_26568831";
+                tanx_h = document.getElementsByTagName("head")[0];
+                if (tanx_h) tanx_h.insertBefore(tanx_s, tanx_h.firstChild);
+            }
+
+
+            if (strsc <= 1024) {
+                aliad1();
+            }
+            else {
+                //300宽
+                aliad2();
+            }
+        </script><a style="display:none!important" id="tanx-a-mm_11220363_1101997_26568831"></a>
+</div>
+<div style="height: 10px;">
+</div>
+</div>
+<div class="his_her" id="recommendArt" style="margin-top: 5px;">
+<div class="str_border" style="margin: 0;">
+<span style="font-size: 14px; float: left;">喜欢该文的人也喜欢</span>
+<a style="float: right;" class="a_more" onclick="artStatistics(&#39;20-9-4&#39;);" href="http://www.360doc.com/readroom.html" target="_blank">更多</a>
+</div>
+<div class="his_her_div" style="height: 264px;">
+<ul class="his_her_list">
+<li id="recommendArtLists"><div><span></span><a href="http://www.360doc.com/content/17/0715/12/43762780_671499881.shtml" target="_blank" onclick="artStatistics(&#39;20-9-1&#39;);">初中化学：基本概念和原理，请为孩子收藏了！</a></div><div><span></span><a href="http://www.360doc.com/content/17/1202/01/9412703_709107608.shtml" target="_blank" onclick="artStatistics(&#39;20-9-1&#39;);">这些，就是你奋斗的理由</a></div><div><span></span><a href="http://www.360doc.com/content/18/0119/09/20714567_723467942.shtml" target="_blank" onclick="artStatistics(&#39;20-9-1&#39;);">“坏学生”连连逃课险些被开除，转身成为全美业界翘楚却又被国人遗忘</a></div><div><span></span><a href="http://www.360doc.com/content/17/1118/08/19237101_705091787.shtml" target="_blank" onclick="artStatistics(&#39;20-9-1&#39;);">余生，想和你一起到老</a></div><div><span></span><a href="http://www.360doc.com/content/17/1109/10/19237101_702294722.shtml" target="_blank" onclick="artStatistics(&#39;20-9-1&#39;);">阴谋论四起，沙特这场政治变动水有多深</a></div><div><span></span><a href="http://www.360doc.com/content/17/1126/06/42392484_707171949.shtml" target="_blank" onclick="artStatistics(&#39;20-9-1&#39;);">膝盖“滑膜炎”痛的不能走路？药店最廉价的药材，治一个好一个！</a></div><div><span></span><a href="http://www.360doc.com/content/17/1122/09/42409698_706273114.shtml" target="_blank" onclick="artStatistics(&#39;20-9-1&#39;);">南明的一些冷知识，看懂明朝最后的唏嘘与悲壮</a></div><div><span></span><a href="http://www.360doc.com/content/17/1229/02/10018653_717399571.shtml" target="_blank" onclick="artStatistics(&#39;20-9-1&#39;);">【學-書】吴玉生硬笔行书《红楼梦诗词》</a></div><div><span></span><a href="http://www.360doc.com/content/17/1112/06/1315956_703047256.shtml" target="_blank" onclick="artStatistics(&#39;20-9-1&#39;);">6道酸辣家常菜，酸酸辣辣好开胃，值得收藏！【酸菜鱼、酸辣土豆丝、手撕包菜、辣炒藕片、酸豆角炒肉末、酸辣汤】</a></div></li>
+</ul>
+</div>
+</div>
+<div class="clear360doc" style="padding-top: 10px;" id="divifartad2"></div>
+<br>
+<div id="divifartrightsogou"></div>
+<div class="clear360doc" id="divad5" style="padding-top: 11px; zoom: 1; width: 300px; position: fixed; top: 80px; left: 0px;">
+<div id="divad4" style="">
+<div id="divifartad"></div>
+<div class="ggwz">
+<a href="javascript:void(0);" onclick="closead(2);">关闭</a>
+</div>
+<div style="height: 13px;">
+</div>
+</div>
+<div style="clear: both;" id="divad6">
+<div id="adfloatbaidu"></div>
+<div class="ggwz" style="left: 25px;">
+<a href="javascript:void(0);" onclick="closead(3);">关闭</a>
+</div>
+<div style="height: 13px;">
+</div>
+</div>
+<div style="height: 75px;">
+</div>
+</div>
+</div>
+</div>
+<p class="clearboth"></p>
+<input type="hidden" id="artid" value="506538554">
+<input type="hidden" id="docarttitle" value="%e6%96%bd%e8%80%90%e5%be%b7PLC%e4%bb%a5%e5%a4%aa%e7%bd%91%e6%a8%a1%e5%9d%97%e5%9b%ba%e4%bb%b6%e5%90%8e%e9%97%a8%e5%bc%95%e5%8f%91%e7%9a%84%e8%a1%80%e6%a1%88">
+<input type="hidden" id="firstartid" value="506538554">
+<input type="hidden" id="firstuid" value="471722">
+<input type="hidden" id="firstarturl" value="http://www.360doc.com/content/15/1018/18/471722_506538554.shtml">
+<input type="hidden" id="subclassid" value="-1">
+<input type="hidden" id="recommendart1" value="643713">
+<input type="hidden" id="recommendart2" value="-1">
+<input type="hidden" id="isowner" value="False">
+<input type="hidden" id="original" value="0">
+<input type="hidden" id="showrewardlist" value="0">
+<input type="hidden" id="artreadroomid" value="0">
+<script src="./施耐德PLC以太网模块固件后门引发的血案_files/sha1.js.下载" type="text/javascript"></script>
+<script src="./施耐德PLC以太网模块固件后门引发的血案_files/addStatistics.js.下载" type="text/javascript"></script>
+<script src="./施耐德PLC以太网模块固件后门引发的血案_files/showarticle.js.下载" type="text/javascript" charset="utf-8"></script>
+<script>GerLookingUserInfo(1,471722,1,0,'-1',-1,10,0);OutputSource('http://mp.weixin.qq.com/s?__biz=MzA5OTMwMzY1NQ==&mid=207033762&idx=1&sn=e629b1db9f43937cba6d5707c707450d&scene=1&srcid=ey8gs2DpZspTTXX1wrxA&from=singlemessage&isappinstalled=0#rd','');OutputLastNextArt('%e5%be%b7%e5%9b%bd%e5%85%a8%e8%87%aa%e5%8a%a8%e5%8c%96%e7%94%9f%e4%ba%a7%ef%bc%8c%e5%85%88%e8%bf%9b%e5%88%b0%e6%81%90%e6%80%96%ef%bc%81','http://www.360doc.com/content/15/0913/12/471722_498841150.shtml',0);OutputLastNextArt('%e6%96%bd%e8%80%90%e5%be%b7PLC%e4%bb%a5%e5%a4%aa%e7%bd%91%e6%a8%a1%e5%9d%97%e5%9b%ba%e4%bb%b6%e5%90%8e%e9%97%a8%e5%bc%95%e5%8f%91%e7%9a%84%e8%a1%80%e6%a1%88(%e4%ba%8c)','http://www.360doc.com/content/15/1018/18/471722_506538709.shtml',1);</script>
+<script type="text/javascript" src="./施耐德PLC以太网模块固件后门引发的血案_files/newheader.js.下载"></script>
+<script src="./施耐德PLC以太网模块固件后门引发的血案_files/getstatusv2.ashx" type="text/javascript" charset="utf-8" async="async"></script>
+<script type="text/javascript">
+        var baiduImagePlus = {
+            noLogo: true,
+            unionId: 'u2617463',
+            maxMiniAdCount: 0,
+            formList: [{ formId: 10 }]
+        };
+    </script>
+<script type="text/javascript" src="http://cpro.baidustatic.com/cpro/ui/i.js"></script>
+
+
+<div id="goTop2" style="left: 1479.5px; display: block;"><div id="goTop"><a href="http://www.360doc.com/content/15/1018/18/471722_506538554.shtml#" id="go_top" onclick="artStatistics(&#39;20-20&#39;);"></a></div><div id="goTop1"><a href="javascript:void(0);" id="go_top1"></a></div><div></div></div></body></html>
